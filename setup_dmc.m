@@ -1,14 +1,15 @@
 function params = setup_dmc()
 %last update: august 2016, thunderhill.
 
-car.m = 1650;
-car.L = 2.4;
-car.a = 0.58*car.L;
-car.b = car.L-car.a;
+car.m = 1700;
+car.a = 1.39;
+car.b = 1.008;
+car.L = car.a+car.b;
 car.Mf = car.b*car.m;
 car.Mr = car.a*car.m;
-car.Iz = 1*car.m*car.a*car.b;
-car.Iz = 1.25*car.Iz;
+%car.Iz = 1*car.m*car.a*car.b;
+%car.Iz = 1.25*car.Iz;
+car.Iz = 2300;
 car.g = 9.8;
 car.Fz = car.m*car.g;
 car.h = 0.45;
@@ -23,7 +24,7 @@ car.deltaMax = deg2rad(38.5);
 car.deltaMin = -car.deltaMax;
 %define front tire
 
-ftire.Ca = 95000;
+ftire.Ca = 75000;
 ftire.Fz = car.Fz*car.b/car.L;
 ftire.Cx = 3e5;
 ftire.radius = 0.29591;         % 205/45R16
