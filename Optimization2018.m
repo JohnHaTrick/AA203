@@ -8,7 +8,7 @@ GenerateFig = false;
 
 %% Define Parameters
 % Horizon length
-p.T             = 4;
+p.T             = 5;
 p.dt            = 0.05;
 p.N             = round(p.T/p.dt);
 % Check N*dt = T = 5s
