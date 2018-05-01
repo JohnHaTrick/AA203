@@ -8,9 +8,10 @@ GenerateFig = false;
 
 %% Define Parameters
 % Horizon length
-p.T             = 5;
+p.T             = 3;
 p.dt            = 0.05;
 p.N             = round(p.T/p.dt);
+p.nSS           = 1; % Number of steps in SS
 % Check N*dt = T = 5s
 
 % Main model parameters
@@ -137,7 +138,7 @@ r           = sol.state.r;
 
 % Input Variables
 % Tr          = sol.input.Tr;
-Tr          = sol.variable.Fxr*p.Rw;
+Tr          = sol.input.Fxr*p.Rw;
 delta       = sol.input.delta;
 
 % Time

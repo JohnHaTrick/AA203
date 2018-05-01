@@ -10,16 +10,16 @@ end
 % INPUT VARIABLES
 delta   = mdlvar(N,1,'input');
 % Tr      = mdlvar(N,15000,'input');
-Fxf     = mdlvar(N,1e4);
+Fxr     = mdlvar(N,1e4,'input');
 
 % LIFTING VARIABLES
 alphaF  = mdlvar(N,1e-3);
 alphaR  = mdlvar(N,1e-4);
 Fyf     = mdlvar(N,1e4);
-% Fxf     = mdlvar(N,1e4);
+Fxf     = mdlvar(N,1e4);
 Fzf     = mdlvar(N,1e4);
 Fyr     = mdlvar(N,1e4);
-Fxr     = mdlvar(N,1e4);
+% Fxr     = mdlvar(N,1e4);
 Fzr     = mdlvar(N,1e4);
 % slack   = mdlvar(1,1);
 
@@ -47,9 +47,11 @@ constraints = [ constraints
     (   diff(r.variable)          == (a*Fyf.physical.*cos(delta.physical) + a*Fxf.physical.*sin(delta.physical)...
                                         - b*Fyr.physical)/Iz*dt/r.const ): 'Yaw rate'
     
-    (   diff(Ux.variable(end-2:end))         == 0  ): 'x Velocity Eq in the end'
-    (   diff(Uy.variable(end-2:end))         == 0  ): 'y Velocity Eq in the end'
-    (   diff(r.variable(end-2:end))          == 0  ): 'Yaw rate Eq in the end'
+    (   diff(Ux.variable(end-nSS:end))         == 0  ): 'x Velocity Eq in the end'
+    (   diff(Uy.variable(end-nSS:end))         == 0  ): 'y Velocity Eq in the end'
+    (   diff(r.variable(end-nSS:end))          == 0  ): 'Yaw rate Eq in the end'
+    (   diff(Fxr.variable(end-nSS:end))        == 0  ): 'x Force rear in the end'
+    (   diff(delta.variable(end-nSS:end))      == 0  ): 'delta angle in the end'
     ];
 
 % State Constraints
@@ -129,8 +131,10 @@ constraints = [ constraints
     Fzr.variable        == 1/(a+b)*(m*a*g + h*Fxr.physical)/Fzr.const
 
     Fyf.variable.*(1+exp(wF*alphaF.physical))   == muF*Fzf.physical.*(1 - exp(wF*alphaF.physical))/Fyf.const;
-    
-    Fyr.variable.*(1+exp(wR*alphaR.physical))   == muR*Fzr.physical.*(1 - exp(wR*alphaR.physical))/Fyr.const;
+    % Inserted friction circle
+    (Fxr.physical.^2 + Fyr.physical.^2).*(1+exp(wR*alphaR.physical)).^2/Fyr.const^2 == (muR*Fzr.physical.*(1 - exp(wR*alphaR.physical))).^2/Fyr.const^2;
+%     (Fxr.physical.^2 + Fyr.physical.^2).*(1 + 2*exp(wR*alphaR.physical) + exp(2*wR*alphaR.physical))/Fyr.const^2 == ... 
+%     (muR*Fzr.physical).^2.*(1 - 2*exp(wR*alphaR.physical) + exp(2*wR*alphaR.physical))/Fyr.const^2;
     
     ];
 
