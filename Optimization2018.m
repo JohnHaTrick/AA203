@@ -8,7 +8,7 @@ GenerateFig = false;
 
 %% Define Parameters
 % Horizon length
-p.T             = 3;
+p.T             = 5;
 p.dt            = 0.05;
 p.N             = round(p.T/p.dt);
 p.nSS           = 1; % Number of steps in SS

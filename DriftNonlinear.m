@@ -132,7 +132,7 @@ constraints = [ constraints
 
     Fyf.variable.*(1+exp(wF*alphaF.physical))   == muF*Fzf.physical.*(1 - exp(wF*alphaF.physical))/Fyf.const;
     % Inserted friction circle
-    (Fxr.physical.^2 + Fyr.physical.^2).*(1+exp(wR*alphaR.physical)).^2/Fyr.const^2 == (muR*Fzr.physical.*(1 - exp(wR*alphaR.physical))).^2/Fyr.const^2;
+    Fyr.variable.*(1+exp(wR*alphaR.physical)) == muR*Fzr.physical.*(1 - exp(wR*alphaR.physical))/Fyr.const;
 %     (Fxr.physical.^2 + Fyr.physical.^2).*(1 + 2*exp(wR*alphaR.physical) + exp(2*wR*alphaR.physical))/Fyr.const^2 == ... 
 %     (muR*Fzr.physical).^2.*(1 - 2*exp(wR*alphaR.physical) + exp(2*wR*alphaR.physical))/Fyr.const^2;
     
