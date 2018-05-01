@@ -8,8 +8,9 @@ GenerateFig = false;
 
 %% Define Parameters
 % Horizon length
-p.N             = 50; 50; 10;
-p.dt            = 0.1; 0.1;
+p.T             = 4;
+p.dt            = 0.05;
+p.N             = round(p.T/p.dt);
 % Check N*dt = T = 5s
 
 % Main model parameters
@@ -22,8 +23,8 @@ p.CaR       = 275000;   % Cornering stiffness rear
 p.muF       = 1.15;     % Friction front
 p.muR       = 0.85;     % Friction rear
 p.mu        = 1;        % Friction average
-p.wF        = 17.4;     % Front logit weight
-p.wR        = 63.0;     % Rear logit weight
+p.wF        = 12.24;     % Front logit weight
+p.wR        = 60.10;     % Rear logit weight
 p.wt        = 1.6;      % Track width
 p.h         = 0.45;     % CG Height
 p.Iz        = 2300;     % Rotational inertia
@@ -49,16 +50,55 @@ p.Uy_f      = -3.618;      % Final y speed
 p.r_f       = 1.262;                            % Final yaw rat
 
 %% Pacejka Formulation
-Fzf  = 1/(p.a+p.b)*p.m*p.a*p.g;
-alphaFlim = pi/6; %atan(3*p.muF*Fzf/p.CaF);
-Fyf  =  @(alphaF) (-p.CaF*tan(alphaF) + p.CaF^2./(3*p.muF*Fzf).*abs(tan(alphaF)).*tan(alphaF)...
-                    - p.CaF^3./(27*p.muF^2*Fzf.^2).*tan(alphaF).^3).*(abs(alphaF)<= alphaFlim) +...
-                    -p.muF*Fzf*sign(alphaF).*(abs(alphaF) > alphaFlim);
+Fzf  = 1/(p.a+p.b)*p.m*p.b*p.g;
+alphaFlimf = atan(3*p.muF*Fzf/p.CaF);
 
-alphaF = linspace(-pi/2,pi/2,101);
+% Front Wheels
+Fyf  =  @(alphaF) (-p.CaF*tan(alphaF) + p.CaF^2./(3*p.muF*Fzf).*abs(tan(alphaF)).*tan(alphaF)...
+                    - p.CaF^3./(27*p.muF^2*Fzf.^2).*tan(alphaF).^3).*(abs(alphaF)<= alphaFlimf) +...
+                    -p.muF*Fzf*sign(alphaF).*(abs(alphaF) > alphaFlimf);
+FyfSimpler = @(alphaF,wF) p.muF*Fzf*(1-2*exp(alphaF.*wF)./(1+exp(alphaF.*wF)));
+                
+Nalpha = 101;
+Nw     = 10001;
+alphaF = linspace(-pi/6,pi/6,Nalpha);
+wF = linspace(10,17,Nw);
+
+for i = 1:Nw
+    DeltaFyfModel(i) = norm(FyfSimpler(alphaF,wF(i))-Fyf(alphaF));
+end
+
+[error, iwFbest] = min(DeltaFyfModel);
+wFbest = wF(iwFbest)
 
 figure('Name','Force from slip angles','Position',[0 600 400 275])
-plot(alphaF,Fyf(alphaF),'k')
+plot(alphaF,Fyf(alphaF),'k'); hold on; grid on; box on
+plot(alphaF,FyfSimpler(alphaF,wFbest),'--r');
+
+%% Rear Wheels
+Fzr  = 1/(p.a+p.b)*p.m*p.a*p.g;
+alphaRlimr = atan(3*p.muR*Fzr/p.CaR);
+Fyr  =  @(alphaR) (-p.CaR*tan(alphaR) + p.CaR^2./(3*p.muR*Fzr).*abs(tan(alphaR)).*tan(alphaR)...
+                    - p.CaR^3./(27*p.muR^2*Fzr.^2).*tan(alphaR).^3).*(abs(alphaR)<= alphaRlimr) +...
+                    -p.muR*Fzr*sign(alphaR).*(abs(alphaR) > alphaRlimr);
+                
+FyrSimpler = @(alphaR,wR) p.muR*Fzr*(1-2*exp(alphaR.*wR)./(1+exp(alphaR.*wR)));
+                
+Nalpha = 101;
+Nw     = 10001;
+alphaR = linspace(-pi/6,pi/6,Nalpha);
+wR = linspace(50,70,Nw);
+
+for i = 1:Nw
+    DeltaFyrModel(i) = norm(FyrSimpler(alphaR,wR(i))-Fyr(alphaR));
+end
+
+[error, iwFbest] = min(DeltaFyrModel);
+wRbest = wR(iwFbest)
+
+figure('Name','Force from slip angles','Position',[400 600 400 275])
+plot(alphaR,Fyr(alphaR),'k'); hold on; grid on; box on
+plot(alphaR,FyrSimpler(alphaR,wRbest),'--r');
                          
 
 %% Settings
@@ -129,18 +169,18 @@ ylabel('U_y [m/s]')
 set(gca,'xticklabel',{})
 subplot(616); hold on; box on
 plot(t,r,'k'); grid on
-ylabel('Psi [rad/s]')
+ylabel('r [rad/s]')
 xlabel('t [s]')
 
 % Input Variables
 figure('Name','Input Variables','Position',[400 0 400 600])
 subplot(211); hold on; box on
-plot(t(1:N),Tr,'k'); grid on
+stairs(t(1:N),Tr,'k'); grid on
 ylabel('T_r [Nm]')
 ylim([p.Tmin, p.Tmax])
 set(gca,'xticklabel',{})
 subplot(212); hold on; box on
-plot(t(1:N),delta/pi*180,'k'); grid on
+stairs(t(1:N),delta/pi*180,'k'); grid on
 ylabel('\delta [deg]')
 xlabel('t [s]')
 ylim([-p.deltaMax*180/pi, p.deltaMax*180/pi])
