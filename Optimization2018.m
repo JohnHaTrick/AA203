@@ -8,8 +8,9 @@ GenerateFig = false;
 
 %% Define Parameters
 % Horizon length
-p.N             = 50;
-p.dt            = 0.100;
+p.N             = 50; 50; 10;
+p.dt            = 0.1; 0.1;
+% Check N*dt = T = 5s
 
 % Main model parameters
 p.m         = 1700;     % Mass
@@ -21,6 +22,8 @@ p.CaR       = 275000;   % Cornering stiffness rear
 p.muF       = 1.15;     % Friction front
 p.muR       = 0.85;     % Friction rear
 p.mu        = 1;        % Friction average
+p.wF        = 17.4;     % Front logit weight
+p.wR        = 63.0;     % Rear logit weight
 p.wt        = 1.6;      % Track width
 p.h         = 0.45;     % CG Height
 p.Iz        = 2300;     % Rotational inertia
@@ -33,19 +36,17 @@ p.deltaMax  = 0.671825; % Maximum steering angle
 p.E_0       = 0;        % Initial East position
 p.N_0       = 0;        % Initial North position
 p.Psi_0     = 0;        % Initial Heading position
-p.Ux_0      = 5;        % Initial x speed
+p.Ux_0      = 10;        % Initial x speed
 p.Uy_0      = 0;        % Initial y speed
 p.r_0       = 0;        % Initial yaw rate
 
 % Terminal conditions
-p.beta_eq   = 0;                            % Final heading? How is it called?
-p.v_eq      = 10;                           % Final speed
 p.E_f       = 0;                            % Final East position
 p.N_f       = 50;                           % Final North position
-p.Psi_f     = 0*0.524;                        % Final Orientation
-p.Ux_f      = 0*p.v_eq*cos(p.beta_eq);      % Final x speed
-p.Uy_f      = 0*p.v_eq*sin(p.beta_eq);      % Final y speed
-p.r_f       = 0;                            % Final yaw rat
+p.Psi_f     = 0.61;                        % Final Orientation
+p.Ux_f      = 5.167;      % Final x speed
+p.Uy_f      = -3.618;      % Final y speed
+p.r_f       = 1.262;                            % Final yaw rat
 
 %% Pacejka Formulation
 Fzf  = 1/(p.a+p.b)*p.m*p.a*p.g;
@@ -62,8 +63,9 @@ plot(alphaF,Fyf(alphaF),'k')
 
 %% Settings
 settings = sdpsettings;
-% settings.solver = 'ipopt';
+settings.solver = 'ipopt';
 settings.ipopt.print_level = 5;
+settings.ipopt.tol = 1e-2;
 settings.verbose = 3;
 settings.debug = 1;
 
@@ -89,11 +91,13 @@ end
 xE          = sol.state.xE;
 yN          = sol.state.yN;
 Psi         = sol.state.Psi;
-Ux          = sol.state.Uy;
-Uy          = sol.state.Ux;
+Ux          = sol.state.Ux;
+Uy          = sol.state.Uy;
 r           = sol.state.r;
+
 % Input Variables
-Tr          = sol.input.Tr;
+% Tr          = sol.input.Tr;
+Tr          = sol.variable.Fxr*p.Rw;
 delta       = sol.input.delta;
 
 % Time
@@ -133,11 +137,20 @@ figure('Name','Input Variables','Position',[400 0 400 600])
 subplot(211); hold on; box on
 plot(t(1:N),Tr,'k'); grid on
 ylabel('T_r [Nm]')
+ylim([p.Tmin, p.Tmax])
 set(gca,'xticklabel',{})
 subplot(212); hold on; box on
 plot(t(1:N),delta/pi*180,'k'); grid on
 ylabel('\delta [deg]')
 xlabel('t [s]')
+ylim([-p.deltaMax*180/pi, p.deltaMax*180/pi])
+
+% Trajectory
+figure('Name','Trajectory E-N','Position',[800 400 400 400])
+plot(xE,yN,'k'); grid on; box on
+axis equal
+xlabel('E [m]')
+ylabel('N [m]')
 
 if GenerateFig
     fileName = 'ICE2018';
