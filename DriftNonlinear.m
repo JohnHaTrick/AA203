@@ -43,13 +43,13 @@ constraints = [ constraints
     (   diff(Ux.variable)         == (Fxf.physical.*cos(delta.physical) - Fyf.physical.*sin(delta.physical)...
                                         + Fxr.physical + m*r.physical(1:N).*Uy.physical(1:N))/m*dt/Ux.const  ): 'x Velocity'
     (   diff(Uy.variable)         == (Fxf.physical.*sin(delta.physical) + Fyf.physical.*cos(delta.physical)...
-                                        + Fyr.physical  - m*r.physical(1:N).*Ux.physical(1:N))/m*dt/Uy.const  ): 'y Velocity'
+                                        + Fyr.physical - m*r.physical(1:N).*Ux.physical(1:N))/m*dt/Uy.const  ): 'y Velocity'
     (   diff(r.variable)          == (a*Fyf.physical.*cos(delta.physical) + a*Fxf.physical.*sin(delta.physical)...
                                         - b*Fyr.physical)/Iz*dt/r.const ): 'Yaw rate'
     
-    (   diff(Ux.variable(end-1:end))         == 0  ): 'x Velocity Eq in the end'
-    (   diff(Uy.variable(end-1:end))         == 0  ): 'y Velocity Eq in the end'
-    (   diff(r.variable(end-1:end))          == 0  ): 'Yaw rate Eq in the end'
+    (   diff(Ux.variable(end-2:end))         == 0  ): 'x Velocity Eq in the end'
+    (   diff(Uy.variable(end-2:end))         == 0  ): 'y Velocity Eq in the end'
+    (   diff(r.variable(end-2:end))          == 0  ): 'Yaw rate Eq in the end'
     ];
 
 % State Constraints
@@ -122,7 +122,9 @@ constraints = [ constraints
     Fxf.variable        == 0
 %     Fxr.variable        == physical(Tr)/Rw/Fxr.const
     Fxr.variable        <= Tmax/Rw/Fxr.const
+    Fxr.variable        <= muR*Fzr.physical.*cos(alphaR.physical)/Fxr.const % Tire limit
     Fxr.variable        >= Tmin/Rw/Fxr.const
+    Fxr.variable        >= -muR*Fzr.physical.*cos(alphaR.physical)/Fxr.const % Tire limit
     Fzf.variable        == 1/(a+b)*(m*b*g - h*Fxr.physical)/Fzf.const
     Fzr.variable        == 1/(a+b)*(m*a*g + h*Fxr.physical)/Fzr.const
 
