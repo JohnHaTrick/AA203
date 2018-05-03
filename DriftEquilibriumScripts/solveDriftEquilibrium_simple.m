@@ -3,7 +3,7 @@ function [rSol,vSol, deltaSol,FxrSol,exitflag] = solveDriftEquilibrium_simple(R0
 lmset = {'levenberg-marquardt',0.01};%default lambda = 0.01
 options = optimset('TolFun', 1e-6,'Display','off','TolX',1e-9,'TypicalX',[.1 .1 1]');
 signr = -sign(beta);
-guessFxr = 0.25*vehicle.rtire.mu*vehicle.rtire.Fz;
+guessFxr = 0.25*vehicle.muf*vehicle.Fzr;
 kappa = 1/R0;
 
 guess = [1 0 (1e-3)*guessFxr];

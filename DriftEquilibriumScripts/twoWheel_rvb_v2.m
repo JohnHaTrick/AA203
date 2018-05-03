@@ -1,14 +1,14 @@
-function [xdot,phidot] = twoWheel_rvb_v2(params,x,delta,Fxr)
+function [xdot,phidot] = twoWheel_rvb_v2(vehicle,x,delta,Fxr)
 %% Vehicle Parameters
 
 r = x(1);
 v = x(2);
 beta = x(3);
 
-m       = params.car.m;
-a       = params.car.a; % Forward Distance to CG
-b       = params.car.b; % Rearward Distance to CG
-Iz     = params.car.Iz; % Moment of Inertia About Z Axis
+m       = vehicle.m;
+a       = vehicle.a; % Forward Distance to CG
+b       = vehicle.b; % Rearward Distance to CG
+Iz     = vehicle.Iz; % Moment of Inertia About Z Axis
 
 
 % Forces and Inputs
@@ -23,8 +23,14 @@ alphaR = atan2(vy-b*r,vx);
 %alphaR = ((Uy - b*r)/(Ux));
 
 % Lateral Forces
-Fyf = fiala2dSimpleCoupling_V2(Fxf,alphaF,params.ftire);
-Fyr = fiala2dSimpleCoupling_V2(Fxr,alphaR,params.rtire);
+ftire.Ca = vehicle.Caf;
+ftire.mu = vehicle.muf;
+ftire.Fz = vehicle.Fzf;
+Fyf = fiala2dSimpleCoupling_V2(Fxf,alphaF,ftire);
+rtire.Ca = vehicle.Car;
+rtire.mu = vehicle.mur;
+rtire.Fz = vehicle.Fzr;
+Fyr = fiala2dSimpleCoupling_V2(Fxr,alphaR,rtire);
 
 % Equations of Motion
 rdot = (1/Iz)*(a*Fyf*cos(delta) - b*Fyr);

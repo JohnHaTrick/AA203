@@ -70,7 +70,7 @@ constraints = [ constraints
     xE.variable(1)      == E_0/xE.const
     yN.variable(1)      == N_0/yN.const
     Psi.variable(1)     == Psi_0/Psi.const
-    Ux.variable(1)      == Ux_0/Ux.const
+%     Ux.variable(1)      == Ux_0/Ux.const
     Uy.variable(1)      == Uy_0/Uy.const
     r.variable(1)       == r_0/r.const
     ];
@@ -96,6 +96,7 @@ constraints = [ constraints
 %     Ux.variable(N+1)    == Ux_f/Ux.const
 %     Uy.variable(N+1)    == Uy_f/Uy.const
 %     r.variable(N+1)     == r_f/r.const
+%     delta.variable(N) == delta_f/delta.const;
     ];
 
 % Input Constraints
@@ -123,18 +124,18 @@ constraints = [ constraints
 constraints = [ constraints
     Fxf.variable        == 0
 %     Fxr.variable        == physical(Tr)/Rw/Fxr.const
-    Fxr.variable        <= Tmax/Rw/Fxr.const
-    Fxr.variable        <= muR*Fzr.physical.*cos(alphaR.physical)/Fxr.const % Tire limit
-    Fxr.variable        >= Tmin/Rw/Fxr.const
-    Fxr.variable        >= -muR*Fzr.physical.*cos(alphaR.physical)/Fxr.const % Tire limit
+    Fxr.variable        <= Tmax/Rwr/Fxr.const
+    Fxr.variable        <= mur*Fzr.physical.*cos(alphaR.physical)/Fxr.const % Tire limit
+    Fxr.variable        >= Tmin/Rwr/Fxr.const
+    Fxr.variable        >= -mur*Fzr.physical.*cos(alphaR.physical)/Fxr.const % Tire limit
     Fzf.variable        == 1/(a+b)*(m*b*g - h*Fxr.physical)/Fzf.const
     Fzr.variable        == 1/(a+b)*(m*a*g + h*Fxr.physical)/Fzr.const
 
-    Fyf.variable.*(1+exp(wF*alphaF.physical))   == muF*Fzf.physical.*(1 - exp(wF*alphaF.physical))/Fyf.const;
+    Fyf.variable.*(1+exp(Wf*alphaF.physical))   == muf*Fzf.physical.*(1 - exp(Wf*alphaF.physical))/Fyf.const;
     % Inserted friction circle
-    Fyr.variable.*(1+exp(wR*alphaR.physical)) == muR*Fzr.physical.*(1 - exp(wR*alphaR.physical))/Fyr.const;
-%     (Fxr.physical.^2 + Fyr.physical.^2).*(1 + 2*exp(wR*alphaR.physical) + exp(2*wR*alphaR.physical))/Fyr.const^2 == ... 
-%     (muR*Fzr.physical).^2.*(1 - 2*exp(wR*alphaR.physical) + exp(2*wR*alphaR.physical))/Fyr.const^2;
+    Fyr.variable.*(1+exp(Wr*alphaR.physical)) == mur*Fzr.physical.*(1 - exp(Wr*alphaR.physical))/Fyr.const;
+%     (Fxr.physical.^2 + Fyr.physical.^2).*(1 + 2*exp(Wr*alphaR.physical) + exp(2*Wr*alphaR.physical))/Fyr.const^2 == ... 
+%     (muR*Fzr.physical).^2.*(1 - 2*exp(Wr*alphaR.physical) + exp(2*Wr*alphaR.physical))/Fyr.const^2;
     
     ];
 
@@ -146,7 +147,8 @@ objective = ((xE.variable(N+1) - E_f/xE.const)^2 + ...
             (Psi.variable(N+1) - Psi_f/Psi.const)^2 + ...
             (Ux.variable(N+1) - Ux_f/Ux.const)^2 + ...
             (Uy.variable(N+1) - Uy_f/Uy.const)^2 + ...
-            (r.variable(N+1) - r_f/r.const)^2)/10 + ...
+            (r.variable(N+1) - r_f/r.const)^2 + ...
+            100*(delta.variable(N) - delta_f/delta.const)^2)/10 + ...
              0.01*sum(diff(delta.variable).^2 + diff(Fxr.variable).^2)/N;
 % objective = slack.variable + 0*sum(delta.variable.^2 + Tr.variable.^2);
 % objective = slack.variable ... %+ 0.001*sum(delta.variable.^2 + Fxr.variable.^2)...
