@@ -18,6 +18,9 @@ p.N             = round(p.T/p.dt);
 p.nSS           = 1; % Number of steps in SS
 % Check N*dt = T = 5s
 
+% load MARTY parameters
+% p = loadVehicleMARTY();
+
 % Main model parameters
 p.m         = 1700;     % Mass
 p.a         = 1.39;     % dist(CG,front axle)
