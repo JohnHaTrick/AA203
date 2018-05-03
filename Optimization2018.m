@@ -6,10 +6,14 @@
 clear all; close all; clc
 GenerateFig = false;
 
+%% Include Dependencies into Path
+% comment this if you already have YALMIP in your path somewhere else...
+addpath(genpath('..\..\MATLAB\YALMIP-master'));
+
 %% Define Parameters
 % Horizon length
 p.T             = 5;
-p.dt            = 0.05;
+p.dt            = 0.1;
 p.N             = round(p.T/p.dt);
 p.nSS           = 1; % Number of steps in SS
 % Check N*dt = T = 5s
