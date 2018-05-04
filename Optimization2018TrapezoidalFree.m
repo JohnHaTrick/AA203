@@ -8,14 +8,13 @@ GenerateFig = false;
 
 %% Include Dependencies into Path
 % comment this if you already have YALMIP in your path somewhere else...
-addpath(genpath('..\..\MATLAB\YALMIP-master'));
+% addpath(genpath('..\..\MATLAB\YALMIP-master'));
 
 %% Define Parameters
 % Horizon length
 p.dtmin         = 0.01;
 p.dtmax         = 0.1;
-p.dt            = 0.05; % If doing with fixed time
-p.N             = 100;
+p.N             = 50;
 p.nSS           = 1; % Number of steps in SS
 % Check N*dt = T = 5s
 
@@ -32,8 +31,8 @@ p.CaR       = 275000;   % Cornering stiffness rear
 p.muF       = 1.15;     % Friction front
 p.muR       = 0.85;     % Friction rear
 p.mu        = 1;        % Friction average
-p.wF        = 12.24;    % Front logit weight
-p.wR        = 60.10;    % Rear logit weight
+p.wF        = 12.24;     % Front logit weight
+p.wR        = 60.10;     % Rear logit weight
 p.wt        = 1.6;      % Track width
 p.h         = 0.45;     % CG Height
 p.Iz        = 2300;     % Rotational inertia
@@ -41,7 +40,6 @@ p.Tmax      = 5400;     % Max torque
 p.Tmin      = -15000;   % Min torque
 p.Rw        = 0.32;     % Real wheel radius
 p.deltaMax  = 0.671825; % Maximum steering angle
-p.Uxmin     = 5;        % Minimum speed
 
 % Initial conditions
 p.E_0       = 0;        % Initial East position
@@ -120,7 +118,7 @@ settings.verbose = 3;
 settings.debug = 1;
 
 %% Optimization Object
-[objective, constraints, variables] = DriftNonlinearFree(p);
+[objective, constraints, variables] = DriftNonlinearTrapezoidalFree(p);
 
 %% Solve
 diagnostics = optimize(constraints,objective,settings);
@@ -152,7 +150,6 @@ delta       = sol.input.delta;
 
 % Time
 N           = p.N;
-% t           = p.dt*(0:N);
 t           = cumsum([0 sol.variable.dt]);
 
 %% Plot Results
@@ -186,12 +183,12 @@ xlabel('t [s]')
 % Input Variables
 figure('Name','Input Variables','Position',[400 0 400 600])
 subplot(211); hold on; box on
-stairs(t(1:N),Tr,'k'); grid on
+plot(t,Tr,'k'); grid on
 ylabel('T_r [Nm]')
 ylim([p.Tmin, p.Tmax])
 set(gca,'xticklabel',{})
 subplot(212); hold on; box on
-stairs(t(1:N),delta/pi*180,'k'); grid on
+plot(t,delta/pi*180,'k'); grid on
 ylabel('\delta [deg]')
 xlabel('t [s]')
 ylim([-p.deltaMax*180/pi, p.deltaMax*180/pi])

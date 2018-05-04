@@ -15,6 +15,6 @@
   
 ## Questions:
 - What are:
-  - matlabfrag.m?
-  - mdlvar.m?
-  - mlf2pdf.m?
+  - matlabfrag.m: Generates figures
+  - mdlvar.m: sdpvar with normalization
+  - mlf2pdf.m: Generates pdf figures using matlabfrag
