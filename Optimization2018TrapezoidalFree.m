@@ -14,7 +14,7 @@ GenerateFig = false;
 % Horizon length
 p.dtmin         = 0.01;
 p.dtmax         = 0.1;
-p.N             = 50;
+p.N             = 100;
 p.nSS           = 1; % Number of steps in SS
 % Check N*dt = T = 5s
 
