@@ -16,7 +16,7 @@ addpath('DriftEquilibriumScripts');
 %% Define Parameters
 % Horizon length
 p.T             = 4;
-p.dt            = 0.005;
+p.dt            = 0.05;
 p.N             = round(p.T/p.dt);
 p.nSS           = 10; % Number of steps in SS
 % Check N*dt = T = 5s
