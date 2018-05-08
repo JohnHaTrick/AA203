@@ -58,8 +58,50 @@ vehicle.Caf          = 75000;   % [N/rad] front axel cornering stiffness
 vehicle.Car          = 275000;  % [N/rad] front axel cornering stiffness
 
 % logit tire modelling
+% weights found via script below
 vehicle.Wf        = 12.24;     % Front logit weight
 vehicle.Wr        = 60.10;     % Rear logit weight
+
+% Pacejka Formulation vs. Logit
+% Uncomment to find / verify Wf / Wr logit params
+%     Nalpha = 101;   Nw     = 10001;
+% % Front Wheels
+%     alphaFlimf = atan(3*vehicle.muf*vehicle.Fzf/vehicle.Caf);
+%     Fyf  =  @(alphaF) (-vehicle.Caf*tan(alphaF) + vehicle.Caf^2./(3*vehicle.muf*vehicle.Fzf).*abs(tan(alphaF)).*tan(alphaF)...
+%                         - vehicle.Caf^3./(27*vehicle.muf^2*vehicle.Fzf.^2).*tan(alphaF).^3).*(abs(alphaF)<= alphaFlimf) +...
+%                         -vehicle.muf*vehicle.Fzf*sign(alphaF).*(abs(alphaF) > alphaFlimf);
+%     FyfSimpler = @(alphaF,wF) vehicle.muf*vehicle.Fzf*(1-2*exp(alphaF.*wF)./(1+exp(alphaF.*wF)));
+%     alphaF = linspace(-pi/6,pi/6,Nalpha);
+%     Wf = linspace(10,17,Nw);
+% 
+%     for i = 1:Nw
+%         DeltaFyfModel(i) = norm(FyfSimpler(alphaF,Wf(i))-Fyf(alphaF));
+%     end
+%     [error, iwFbest] = min(DeltaFyfModel);
+%     wFbest = Wf(iwFbest);
+% 
+%     figure('Name','Force from slip angles','Position',[0 600 400 275])
+%     plot(alphaF,Fyf(alphaF),'k'); hold on; grid on; box on
+%     plot(alphaF,FyfSimpler(alphaF,wFbest),'--r');
+% 
+% % Rear Wheels
+%     alphaRlimr = atan(3*vehicle.mur*vehicle.Fzr/vehicle.Car);
+%     Fyr  =  @(alphaR) (-vehicle.Car*tan(alphaR) + vehicle.Car^2./(3*vehicle.mur*vehicle.Fzr).*abs(tan(alphaR)).*tan(alphaR)...
+%                         - vehicle.Car^3./(27*vehicle.mur^2*vehicle.Fzr.^2).*tan(alphaR).^3).*(abs(alphaR)<= alphaRlimr) +...
+%                         -vehicle.mur*vehicle.Fzr*sign(alphaR).*(abs(alphaR) > alphaRlimr);
+%     FyrSimpler = @(alphaR,wR) vehicle.mur*vehicle.Fzr*(1-2*exp(alphaR.*wR)./(1+exp(alphaR.*wR)));
+%     alphaR = linspace(-pi/6,pi/6,Nalpha);
+%     Wr = linspace(50,70,Nw);
+% 
+%     for i = 1:Nw
+%         DeltaFyrModel(i) = norm(FyrSimpler(alphaR,Wr(i))-Fyr(alphaR));
+%     end
+%     [error, iwFbest] = min(DeltaFyrModel);
+%     wRbest = Wr(iwFbest);
+% 
+%     figure('Name','Force from slip angles','Position',[400 600 400 275])
+%     plot(alphaR,Fyr(alphaR),'k'); hold on; grid on; box on
+%     plot(alphaR,FyrSimpler(alphaR,wRbest),'--r');
 
 
 %% Drift eq stats
