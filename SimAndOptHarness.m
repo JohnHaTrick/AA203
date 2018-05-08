@@ -1,17 +1,18 @@
 %% Optimization with NLP
 
-
 % Contributors:
 %       Mauro Salazar, ETH Zuerich, mauro.salazarvillalon@gmail.com,
 %       John Alsterda, Stanford U,  alsterda@stanford.edu
+%       Qizhan Tam.    Stanford U,  qtam@stanford.edu
 
 clear all; close all; clc
-GenerateFig = false;
+
 
 %% Include Dependencies into Path
 % comment this if you already have YALMIP in your path somewhere else...
 addpath(genpath('..\..\MATLAB\YALMIP-master'));
 addpath('DriftEquilibriumScripts');
+
 
 %% Define Parameters
 % Horizon length
@@ -100,7 +101,7 @@ wFbest = Wf(iwFbest);
 % plot(alphaF,Fyf(alphaF),'k'); hold on; grid on; box on
 % plot(alphaF,FyfSimpler(alphaF,wFbest),'--r');
 
-%% Rear Wheels
+% Rear Wheels
 Fzr  = 1/(p.a+p.b)*p.m*p.a*p.g;
 alphaRlimr = atan(3*p.mur*Fzr/p.Car);
 Fyr  =  @(alphaR) (-p.Car*tan(alphaR) + p.Car^2./(3*p.mur*Fzr).*abs(tan(alphaR)).*tan(alphaR)...
@@ -134,8 +135,10 @@ settings.ipopt.tol = 1e-2;
 settings.verbose = 3;
 settings.debug = 1;
 
+
 %% Optimization Object
 [objective, constraints, variables] = DriftNonlinear(p);
+
 
 %% Solve
 diagnostics = optimize(constraints,objective,settings);
@@ -151,6 +154,7 @@ for i = 1:length(constraints)
     sol.dual.(['c' num2str(i)]) = [ {dual(constraints(i))} {tag(constraints(i))} ];
 end
 
+
 %% Gather Data
 % State Variables
 xE          = sol.state.xE;
@@ -162,63 +166,13 @@ r           = sol.state.r;
 
 % Input Variables
 % Tr          = sol.input.Tr;
-Tr          = sol.input.Fxr*p.Rwr;
-delta       = sol.input.delta;
+Tr            = sol.input.Fxr*p.Rwr;
+delta         = sol.input.delta;
 
 % Time
 N           = p.N;
 t           = p.dt*(0:N);
 
+
 %% Plot Results
-% State Variables
-figure('Name','State Variables','Position',[0 0 400 1000])
-subplot(611); hold on; box on
-plot(t,xE,'k'); grid on
-ylabel('E [m]')
-set(gca,'xticklabel',{})
-subplot(612); hold on; box on
-plot(t,yN,'k'); grid on
-ylabel('N [m]')
-set(gca,'xticklabel',{})
-subplot(613); hold on; box on
-plot(t,Psi/pi*180,'k'); grid on
-set(gca,'xticklabel',{})
-ylabel('\Psi [deg]')
-subplot(614); hold on; box on
-plot(t,Ux,'k'); grid on
-ylabel('U_x [m/s]')
-set(gca,'xticklabel',{})
-subplot(615); hold on; box on
-plot(t,Uy,'k'); grid on
-ylabel('U_y [m/s]')
-set(gca,'xticklabel',{})
-subplot(616); hold on; box on
-plot(t,r,'k'); grid on
-ylabel('r [rad/s]')
-xlabel('t [s]')
-
-% Input Variables
-figure('Name','Input Variables','Position',[400 0 400 600])
-subplot(211); hold on; box on
-stairs(t(1:N),Tr,'k'); grid on
-ylabel('T_r [Nm]')
-ylim([p.Tmin, p.Tmax])
-set(gca,'xticklabel',{})
-subplot(212); hold on; box on
-stairs(t(1:N),delta/pi*180,'k'); grid on
-ylabel('\delta [deg]')
-xlabel('t [s]')
-ylim([-p.deltaMax*180/pi, p.deltaMax*180/pi])
-
-% Trajectory
-figure('Name','Trajectory E-N','Position',[800 400 400 400])
-plot(xE,yN,'k'); grid on; box on
-axis equal
-xlabel('E [m]')
-ylabel('N [m]')
-
-if GenerateFig
-    fileName = 'ICE2018';
-    mlf2pdf(gcf,fileName)
-    system(strcat('pdfcrop --noverbose ./',fileName,'.pdf ./', fileName,'.pdf'));
-end
+plotNonlinearSoln(t,sol,p);
