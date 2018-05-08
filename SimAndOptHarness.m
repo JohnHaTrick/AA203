@@ -175,4 +175,4 @@ t           = p.dt*(0:N);
 
 
 %% Plot Results
-plotNonlinearSoln(t,sol,p);
+plotNonlinearSoln(t,sol,p,eqStates);

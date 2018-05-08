@@ -1,9 +1,11 @@
-function plotNonlinearSoln( t, sol, p)
+function plotNonlinearSoln( t, sol, p, eqStates)
 %PLOTNONLINEARSOLN
 %   Plot solution of AA203 nonlinear trajectory
 
+close all;
+
 %% Parse Solution Data
-N = length(t)-1;
+N = size(t,2)-1;
 % State Variables
 xE          = sol.state.xE;
 yN          = sol.state.yN;
@@ -18,35 +20,46 @@ delta       = sol.input.delta;
 
 
 %% State Variables
-figure('Name','State Variables','Position',[0 0 400 1000])
-subplot(611); hold on; box on
+figure('Name','State Variables','Position',[0 50 800 950])
+subplot(5,2,1); hold on; box on
     plot(t,xE,'k'); grid on
     ylabel('E [m]')
     set(gca,'xticklabel',{})
-subplot(612); hold on; box on
+subplot(5,2,2); hold on; box on
     plot(t,yN,'k'); grid on
     ylabel('N [m]')
     set(gca,'xticklabel',{})
-subplot(613); hold on; box on
+subplot(5,2,3); hold on; box on
     plot(t,Psi/pi*180,'k'); grid on
     set(gca,'xticklabel',{})
     ylabel('\Psi [deg]')
-subplot(614); hold on; box on
+subplot(5,2,4); hold on; grid on;
+    plot(t,tan(Uy./Ux),'k'); grid on
+    plot(t,eqStates.beta*ones(size(t)),'k--')
+    ylabel('beta [rad]')
+subplot(5,2,5); hold on; box on
+    plot(t,r,'k'); grid on
+    plot(t,eqStates.r*ones(size(t)),'k--')
+    ylabel('r [rad/s]')
+    xlabel('t [s]')
+subplot(5,2,6); hold on; box on
+    plot(t,sqrt(Ux.^2+Uy.^2),'k'); grid on
+    plot(t,eqStates.V*ones(size(t)),'k--')
+    ylabel('V [m/s]')
+    set(gca,'xticklabel',{})
+subplot(5,2,7); hold on; box on
     plot(t,Ux,'k'); grid on
     ylabel('U_x [m/s]')
     set(gca,'xticklabel',{})
-subplot(615); hold on; box on
+subplot(5,2,8); hold on; box on
     plot(t,Uy,'k'); grid on
     ylabel('U_y [m/s]')
     set(gca,'xticklabel',{})
-subplot(616); hold on; box on
-    plot(t,r,'k'); grid on
-    ylabel('r [rad/s]')
-    xlabel('t [s]')
+
 
     
 %% Input Variables
-figure('Name','Input Variables','Position',[400 0 400 600])
+figure('Name','Input Variables','Position',[800 50 400 500])
 subplot(211); hold on; box on
     stairs(t(1:N),Tr,'k'); grid on
     ylabel('T_r [Nm]')
@@ -60,11 +73,44 @@ subplot(211); hold on; box on
 
     
 %% Global Position Trajectory
-figure('Name','Trajectory E-N','Position',[800 400 400 400])
-plot(xE,yN,'k'); grid on; box on
+figure('Name','Trajectory E-N','Position',[1200 50 700 700]);
+grid on; box on; hold on;
+plot(xE,yN,'k--');
 axis equal
 xlabel('E [m]')
 ylabel('N [m]')
+
+% draw MARTY
+for i = 1:N+1
+    if mod(i-1,5) == 0
+        w = 2;    l = 3;    t = 1;
+        R   = plot([xE(i)-w/2, xE(i)+w/2], ...
+                   [yN(i)-l/2, yN(i)-l/2],'Color',[.5 .5 .5],'LineWidth',2);
+        F   = plot([xE(i)+w/2, xE(i)-w/2], ...
+                   [yN(i)+l/2, yN(i)+l/2],'Color',[.5 .5 .5],'LineWidth',2);
+        C   = plot([xE(i),     xE(i)], ...
+                   [yN(i)-l/2, yN(i)+l/2],'Color',[.5 .5 .5],'LineWidth',2);
+        Wrr = plot([xE(i)+w/2, xE(i)+w/2], ...
+                   [yN(i)-l/2-t/2, yN(i)-l/2+t/2],'k','LineWidth',2);
+        Wrl = plot([xE(i)-w/2, xE(i)-w/2], ...
+                   [yN(i)-l/2-t/2, yN(i)-l/2+t/2],'k','LineWidth',2);
+        Wfr = plot([xE(i)+w/2, xE(i)+w/2], ...
+                   [yN(i)+l/2-t/2, yN(i)+l/2+t/2],'k','LineWidth',2);
+        Wfl = plot([xE(i)-w/2, xE(i)-w/2], ...
+                   [yN(i)+l/2-t/2, yN(i)+l/2+t/2],'k','LineWidth',2);
+        rotate(Wfr, [0 0 1], delta(min(i,N))*180/pi, [xE(i)+w/2,yN(i)+l/2,0]);
+        rotate(Wfl, [0 0 1], delta(min(i,N))*180/pi, [xE(i)-w/2,yN(i)+l/2,0]);
+        rotate(Wrr, [0 0 1], Psi(i)*180/pi, [xE(i),yN(i),0]);
+        rotate(Wrl, [0 0 1], Psi(i)*180/pi, [xE(i),yN(i),0]);
+        rotate(Wfr, [0 0 1], Psi(i)*180/pi, [xE(i),yN(i),0]);
+        rotate(Wfl, [0 0 1], Psi(i)*180/pi, [xE(i),yN(i),0]);
+        rotate(F,   [0 0 1], Psi(i)*180/pi, [xE(i),yN(i),0]);
+        rotate(R,   [0 0 1], Psi(i)*180/pi, [xE(i),yN(i),0]);
+        rotate(C,   [0 0 1], Psi(i)*180/pi, [xE(i),yN(i),0]);
+        refreshdata
+        drawnow
+    end
+end
 
 
 %% what's this do?
