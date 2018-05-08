@@ -1,8 +1,9 @@
 # AA203 Drift Initiation
 
 ## Getting started:
-- run Optimization2018.m
+- run SimAndOptHarness.m
   - calls: DiftNonlinear.m
+    - calls: mdlvar.m (what's this do?)
 - Dynamics equations located in: DroftDynamics.pdf
   - see neat model sketch in: ModelSketch.docx
 - Parameters located in: DriftParams.xlsx
@@ -16,5 +17,4 @@
 ## Questions:
 - What are:
   - matlabfrag.m?
-  - mdlvar.m?
   - mlf2pdf.m?
