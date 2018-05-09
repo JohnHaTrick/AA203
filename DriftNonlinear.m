@@ -9,8 +9,8 @@ end
 %% Initialize Variables
 % INPUT VARIABLES
 delta   = mdlvar(N,1,'input');
-% Tr      = mdlvar(N,15000,'input');
-Fxr     = mdlvar(N,1e4,'input');
+Tr      = mdlvar(N,15000,'input');
+% Fxr     = mdlvar(N,1e4,'input');
 
 % LIFTING VARIABLES
 alphaF  = mdlvar(N,1e-3);
@@ -19,8 +19,9 @@ Fyf     = mdlvar(N,1e4);
 Fxf     = mdlvar(N,1e4);
 Fzf     = mdlvar(N,1e4);
 Fyr     = mdlvar(N,1e4);
-% Fxr     = mdlvar(N,1e4);
+Fxr     = mdlvar(N,1e4);
 Fzr     = mdlvar(N,1e4);
+Xi      = mdlvar(N,1);
 % slack   = mdlvar(1,1);
 
 % STATE VARIABLES
@@ -36,32 +37,38 @@ constraints = [];
 
 % Differential Equations
 constraints = [ constraints
-    (   diff(xE.variable)         == (- Ux.physical(1:N).*sin(Psi.physical(1:N)) - Uy.physical(1:N).*cos(Psi.physical(1:N)))*dt/xE.const  ): 'East Position'
-    (   diff(yN.variable)         == (Ux.physical(1:N).*cos(Psi.physical(1:N)) - Uy.physical(1:N).*sin(Psi.physical(1:N)))*dt/yN.const  ): 'North Position'
-    (   diff(Psi.variable)        == r.physical(1:N)*dt/Psi.const  ): 'Orientation'
+    ( diff(xE.variable)  == (-   Ux.physical(1:N).*sin(Psi.physical(1:N)) ...
+                            -    Uy.physical(1:N).*cos(Psi.physical(1:N)))*dt/xE.const ): 'East Position'
+    ( diff(yN.variable)  == (    Ux.physical(1:N).*cos(Psi.physical(1:N)) ...
+                            -    Uy.physical(1:N).*sin(Psi.physical(1:N)))*dt/yN.const ): 'North Position'
+    ( diff(Psi.variable) ==       r.physical(1:N)*dt/Psi.const ):                         'Orientation'
+    ( diff(Ux.variable)  == (   Fxf.physical.*cos(delta.physical) ...
+                            -   Fyf.physical.*sin(delta.physical) ...
+                            +   Fxr.physical                      ...
+                            +   m*r.physical(1:N).*Uy.physical(1:N))/m*dt/Ux.const ):     'x Velocity'
+    ( diff(Uy.variable)  == (   Fxf.physical.*sin(delta.physical) ...
+                            +   Fyf.physical.*cos(delta.physical) ...
+                            +   Fyr.physical                      ...
+                            -   m*r.physical(1:N).*Ux.physical(1:N))/m*dt/Uy.const ):     'y Velocity'
+    ( diff(r.variable)   == ( a*Fyf.physical.*cos(delta.physical) ...
+                            + a*Fxf.physical.*sin(delta.physical) ...
+                            - b*Fyr.physical)/Iz*dt/r.const ):                            'Yaw rate'
     
-    (   diff(Ux.variable)         == (Fxf.physical.*cos(delta.physical) - Fyf.physical.*sin(delta.physical)...
-                                        + Fxr.physical + m*r.physical(1:N).*Uy.physical(1:N))/m*dt/Ux.const  ): 'x Velocity'
-    (   diff(Uy.variable)         == (Fxf.physical.*sin(delta.physical) + Fyf.physical.*cos(delta.physical)...
-                                        + Fyr.physical - m*r.physical(1:N).*Ux.physical(1:N))/m*dt/Uy.const  ): 'y Velocity'
-    (   diff(r.variable)          == (a*Fyf.physical.*cos(delta.physical) + a*Fxf.physical.*sin(delta.physical)...
-                                        - b*Fyr.physical)/Iz*dt/r.const ): 'Yaw rate'
-    
-    (   diff(Ux.variable(end-nSS:end))         == 0  ): 'x Velocity Eq in the end'
-    (   diff(Uy.variable(end-nSS:end))         == 0  ): 'y Velocity Eq in the end'
-    (   diff(r.variable(end-nSS:end))          == 0  ): 'Yaw rate Eq in the end'
-    (   diff(Fxr.variable(end-nSS:end))        == 0  ): 'x Force rear in the end'
-    (   diff(delta.variable(end-nSS:end))      == 0  ): 'delta angle in the end'
+%     ( diff(Ux.variable(end-nSS:end))    == 0 ): 'x Velocity Eq in the end'
+%     ( diff(Uy.variable(end-nSS:end))    == 0 ): 'y Velocity Eq in the end'
+%     ( diff(r.variable(end-nSS:end))     == 0 ): 'Yaw rate Eq in the end'
+%     ( diff(Tr.variable(end-nSS:end))    == 0 ): 'x Force rear in the end'
+%     ( diff(delta.variable(end-nSS:end)) == 0 ): 'delta angle in the end'
     ];
 
 % State Constraints
 constraints = [ constraints
-    yN.variable >= 0
-    Psi.variable <= pi/Psi.const
-    Psi.variable >= -pi/Psi.const
-    alphaF.variable <= pi/2/alphaF.const
+%     yN.variable >= 0
+%     Psi.variable <= pi/Psi.const
+%     Psi.variable >= -pi/Psi.const
+    alphaF.variable <=  pi/2/alphaF.const
     alphaF.variable >= -pi/2/alphaF.const
-    alphaR.variable <= pi/2/alphaR.const
+    alphaR.variable <=  pi/2/alphaR.const
     alphaR.variable >= -pi/2/alphaR.const
     ];
 
@@ -101,55 +108,65 @@ constraints = [ constraints
 
 % Input Constraints
 constraints = [ constraints
-%     Tr.variable        <=  Tmax/Tr.const % Start simpler
-%     Tr.variable        >=  Tmin/Tr.const % Start simpler
-%     Tr.variable        >= 0
+    Tr.variable        <=  Tmax/Tr.const
+    Tr.variable        >=  Tmin/Tr.const
+%     Tr.variable        >= 0 % no brakes
     delta.variable     <=  deltaMax/delta.const
     delta.variable     >= -deltaMax/delta.const
-%     delta.variable     == 0
+%     delta.variable     == 0 % no steering
     ];
 
 %% Physical Constraints
 % Slip angles
 constraints = [ constraints
-%     alphaF.variable    == (atan((Uy.physical(1:N) + a*r.physical(1:N))./Ux.physical(1:N)) - delta.physical)/alphaF.const
-%     alphaR.variable    == (atan((Uy.physical(1:N) - b*r.physical(1:N))./Ux.physical(1:N)))/alphaR.const
-    tan(alphaF.physical + delta.physical).*Ux.physical(1:N)/Uy.const    == (Uy.physical(1:N) + a*r.physical(1:N))/Uy.const
-    tan(alphaR.physical).*Ux.physical(1:N)/Uy.const                     == (Uy.physical(1:N) - b*r.physical(1:N))/Uy.const
-%     tan(delta.physical).*Ux.physical(1:N)/Uy.const    == (Uy.physical(1:N) + a*r.physical(1:N))/Uy.const % Kinetmatic model
-%     (Uy.physical(1:N) - b*r.physical(1:N))/Uy.const   == 0 % Kinetmatic model
+    % alphaF.variable == (atan((Uy.physical(1:N) + a*r.physical(1:N))./Ux.physical(1:N)) - delta.physical)/alphaF.const
+    % alphaR.variable == (atan((Uy.physical(1:N) - b*r.physical(1:N))./Ux.physical(1:N)))/alphaR.const
+% remove division
+    tan(alphaF.physical + delta.physical).*Ux.physical(1:N)/Uy.const == (Uy.physical(1:N) + a*r.physical(1:N))/Uy.const
+    tan(alphaR.physical).*Ux.physical(1:N)/Uy.const                  == (Uy.physical(1:N) - b*r.physical(1:N))/Uy.const
+% Kinematic Model:
+    % tan(delta.physical).*Ux.physical(1:N)/Uy.const  == (Uy.physical(1:N) + a*r.physical(1:N))/Uy.const
+    % (Uy.physical(1:N) - b*r.physical(1:N))/Uy.const == 0
     ];
 
 % Forces
 constraints = [ constraints
-    Fxf.variable        == 0
-%     Fxr.variable        == physical(Tr)/Rw/Fxr.const
-    Fxr.variable        <= Tmax/Rwr/Fxr.const
-    Fxr.variable        <= mur*Fzr.physical.*cos(alphaR.physical)/Fxr.const % Tire limit
-    Fxr.variable        >= Tmin/Rwr/Fxr.const
-    Fxr.variable        >= -mur*Fzr.physical.*cos(alphaR.physical)/Fxr.const % Tire limit
+% Longitudinal Forces:
+    Fxf.variable        == 0 % No front brakes for now
+    Fxr.variable        == Tr.physical/Rwr/Fxr.const
+    % Tire friction Limit:
+    Fxr.variable        <=  mur*Fzr.physical/Fxr.const
+    Fxr.variable        >= -mur*Fzr.physical.*cos(alphaR.physical)/Fxr.const
+    % if input is FxR instead of Tr
+    % Fxr.variable        >= Tmin/Rwr/Fxr.const 
+    % Fxr.variable        <= Tmax/Rwr/Fxr.const
+% Normal loading forces:
     Fzf.variable        == 1/(a+b)*(m*b*g - h*Fxr.physical)/Fzf.const
     Fzr.variable        == 1/(a+b)*(m*a*g + h*Fxr.physical)/Fzr.const
-
-    Fyf.variable.*(1+exp(Wf*alphaF.physical))   == muf*Fzf.physical.*(1 - exp(Wf*alphaF.physical))/Fyf.const;
-    % Inserted friction circle
-    Fyr.variable.*(1+exp(Wr*alphaR.physical)) == mur*Fzr.physical.*(1 - exp(Wr*alphaR.physical))/Fyr.const;
-%     (Fxr.physical.^2 + Fyr.physical.^2).*(1 + 2*exp(Wr*alphaR.physical) + exp(2*Wr*alphaR.physical))/Fyr.const^2 == ... 
-%     (muR*Fzr.physical).^2.*(1 - 2*exp(Wr*alphaR.physical) + exp(2*Wr*alphaR.physical))/Fyr.const^2;
-    
+% Lateral Forces:
+    Fyf.variable.*(1+exp(Wf*alphaF.physical)) == muf*Fzf.physical.*(1 - exp(Wf*alphaF.physical))/Fyf.const
+    (Xi.variable*mur.*Fzr.physical).^2        == ((mur*Fzr.physical).^2 - Fxr.physical.^2)/(Xi.const^2)
+    Fyr.variable.*(1+exp(Wr*alphaR.physical)) == mur*Fzr.physical.*Xi.physical.*(1 - exp(Wr*alphaR.physical))/Fyr.const
+    % (Fxr.physical.^2 + Fyr.physical.^2).*(1 + 2*exp(Wr*alphaR.physical) + exp(2*Wr*alphaR.physical))/Fyr.const^2 == ... 
+    % ((muR*Fzr.physical).^2.*(1 - 2*exp(Wr*alphaR.physical) + exp(2*Wr*alphaR.physical))/Fyr.const^2;
     ];
 
 %% Objective
 % objective = sum(abs(diff(delta.variable)) + abs(diff(Tr.variable))); % Black magic tricks: set objective size to 1
 % objective = sum(diff(delta.variable).^2 + diff(Tr.variable).^2)/1.5e-2; % Black magic tricks: set objective size to 1
-objective = ((xE.variable(N+1) - E_f/xE.const)^2 + ...
-            (yN.variable(N+1) - N_f/yN.const)^2 + ...
-            (Psi.variable(N+1) - Psi_f/Psi.const)^2 + ...
-            (Ux.variable(N+1) - Ux_f/Ux.const)^2 + ...
-            (Uy.variable(N+1) - Uy_f/Uy.const)^2 + ...
-            (r.variable(N+1) - r_f/r.const)^2 + ...
-            100*(delta.variable(N) - delta_f/delta.const)^2)/10 + ...
-             0.01*sum(diff(delta.variable).^2 + diff(Fxr.variable).^2)/N;
+objective = ( ...
+            + (Ux.variable(N+1)  - Ux_f/Ux.const)^2 ...
+            + (Uy.variable(N+1)  - Uy_f/Uy.const)^2 ...
+            + (r.variable(N+1)   - r_f/r.const)^2 ...
+            + (delta.variable(N) - delta_f/delta.const)^2 ...
+            + 0.01*sum(diff(delta.variable).^2 + diff(Tr.variable).^2)/N ...
+            );
+        
+%             + (xE.variable(N+1)  - E_f/xE.const)^2 ...
+%             + (yN.variable(N+1)  - N_f/yN.const)^2 ...
+%             + (Psi.variable(N+1) - Psi_f/Psi.const)^2 ...
+
+        
 % objective = slack.variable + 0*sum(delta.variable.^2 + Tr.variable.^2);
 % objective = slack.variable ... %+ 0.001*sum(delta.variable.^2 + Fxr.variable.^2)...
 %             + 0.01*sum(diff(delta.variable).^2 + diff(Fxr.variable).^2);

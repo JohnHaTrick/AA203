@@ -37,6 +37,7 @@ vehicle.Rwr         = 0.32;       % wheel effective radius
 %% Longitudinal force parameters
 vehicle.Tmax = 5400;                % maximum rear torque
 vehicle.Tmin = -15000;              % maximum brake torque
+
 % Drag stuff: FxDrag = Cd0 + Cd1*Vx + Cd2*Vx^2
 %     vehicle.Cd0_N        = 241.0;      // rolling resistance, updated by Joe 10/9/2014, .12*2009kg
 %     vehicle.Cd1_Npmps    = 25.1;       // updated by Joe 10/9/2014, .0125*2009kg
@@ -45,6 +46,7 @@ vehicle.Tmin = -15000;              % maximum brake torque
 
 %% Steering properties
 vehicle.deltaMax = 0.671825;        % delta limit
+
 %     vehicle.deltaRateMax_radps = 0.344; // limit on change in delta
 %     vehicle.steerRatio   = 1;           // HWA to RWA
 

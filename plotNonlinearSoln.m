@@ -14,8 +14,8 @@ Ux          = sol.state.Ux;
 Uy          = sol.state.Uy;
 r           = sol.state.r;
 % Input Variables
-% Tr          = sol.input.Tr;
-Tr          = sol.input.Fxr*p.Rwr;
+Tr          = sol.input.Tr;
+% Tr          = sol.input.Fxr*p.Rwr; % if solving for Fxr
 delta       = sol.input.delta;
 
 
@@ -65,8 +65,9 @@ subplot(211); hold on; box on
     ylabel('T_r [Nm]')
     ylim([p.Tmin, p.Tmax])
     set(gca,'xticklabel',{})
-    subplot(212); hold on; box on
-    stairs(t(1:N),delta/pi*180,'k'); grid on
+subplot(212); hold on; box on
+    stairs(t(1:N),delta*180/pi,'k'); grid on
+    plot(t,eqStates.delta*180/pi*ones(size(t)),'k--')
     ylabel('\delta [deg]')
     xlabel('t [s]')
     ylim([-p.deltaMax*180/pi, p.deltaMax*180/pi])
@@ -82,7 +83,7 @@ ylabel('N [m]')
 
 % draw MARTY
 for i = 1:N+1
-    if mod(i-1,5) == 0
+    if mod(i-1,10) == 0
         w = 2;    l = 3;    t = 1;
         R   = plot([xE(i)-w/2, xE(i)+w/2], ...
                    [yN(i)-l/2, yN(i)-l/2],'Color',[.5 .5 .5],'LineWidth',2);
@@ -111,6 +112,8 @@ for i = 1:N+1
         drawnow
     end
 end
+
+% draw target circle
 
 
 %% what's this do?

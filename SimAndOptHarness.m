@@ -19,7 +19,7 @@ addpath('DriftEquilibriumScripts');
 p.T             = 4;                % [sec]   Total time to hit target
 p.dt            = 0.05;             % [sec]   Time step
 p.N             = round(p.T/p.dt);  %         # of time steps
-p.nSS           = 10;               %         # of steps in SS constraint
+p.nSS           = 1;               %         # of steps in SS constraint
 % Check N*dt = T
 
 % load MARTY parameters
@@ -41,14 +41,14 @@ p.r_0       = 0;                    % [rad/s] Initial yaw rate
 R           = 6;                    % [m]     Radius of drift (chosen)
 beta        = -30*(pi/180);         % [rad]   Drift sideslip (chosen)
 %   calculate driftEq r, V, delta, Fxr
-eqStates    =  calcDriftEqStates(R,beta,vehicle);
+eqStates    = calcDriftEqStates(R,beta,vehicle);
 p.E_f       = 0;                    % [m]     Final East position
-p.N_f       = 50;                   % [m]     Final North position
+p.N_f       = 40;                   % [m]     Final North position
 p.Psi_f     = -beta;                % [rad]   Final Orientation
 p.Ux_f      = eqStates.V*cos(beta); % [m/s]   Final x speed
 p.Uy_f      = eqStates.V*sin(beta); % [m/s]   Final y speed
 p.r_f       = eqStates.r;           % [rad/s] Final yaw rate
-p.delta_f   = eqStates.delta;
+p.delta_f   = eqStates.delta;       % [rad]   Final steer angle
 message = ['Aiming to drift about a left turn with:\n    radius %.1f m\n' ...
            '    speed %.1f m/s (Ux %.1f & Uy %.1f)\n    beta %.1f deg (%.1f rad)\n' ...
            '    yaw rate %.1f deg/s (%.1f rad/s)\n\n'];
@@ -59,7 +59,7 @@ fprintf(message, R, eqStates.V, p.Ux_f, p.Uy_f, beta*180/pi, beta, eqStates.r*18
 settings                   = sdpsettings;
 settings.solver            = 'ipopt';
 settings.ipopt.print_level = 5;
-settings.ipopt.tol         = 1e-2;
+settings.ipopt.tol         = 1e-1;
 settings.verbose           = 3;
 settings.debug             = 1;
 
@@ -93,8 +93,8 @@ Uy          = sol.state.Uy;
 r           = sol.state.r;
 
 % Input Variables
-% Tr          = sol.input.Tr;
-Tr          = sol.input.Fxr*p.Rwr;
+Tr          = sol.input.Tr;
+% Tr          = sol.input.Fxr*p.Rwr; % if solving for Fxr
 delta       = sol.input.delta;
 
 % Time
