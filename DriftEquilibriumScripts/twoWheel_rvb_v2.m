@@ -25,11 +25,11 @@ alphaR = atan2(vy-b*r,vx);
 % Lateral Forces
 ftire.Ca = vehicle.Caf;
 ftire.mu = vehicle.muf;
-ftire.Fz = vehicle.Fzf;
+ftire.Fz = vehicle.Fzf_stat;
 Fyf = fiala2dSimpleCoupling_V2(Fxf,alphaF,ftire);
 rtire.Ca = vehicle.Car;
 rtire.mu = vehicle.mur;
-rtire.Fz = vehicle.Fzr;
+rtire.Fz = vehicle.Fzr_stat;
 Fyr = fiala2dSimpleCoupling_V2(Fxr,alphaR,rtire);
 
 % Equations of Motion

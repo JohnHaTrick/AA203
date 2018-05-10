@@ -1,5 +1,5 @@
 function xdot = twoWheel_rvb_solverWrapper(vehicle,x,delta,Fxr)
-muFzr = vehicle.mur*vehicle.Fzr;
+muFzr = vehicle.mur*vehicle.Fzr_stat;
 if abs(Fxr) > abs(muFzr) || abs(delta) > pi/2
    xdot = 1e5*[1 1 1];
 else

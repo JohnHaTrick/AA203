@@ -16,8 +16,8 @@ vehicle.h          = .45;        % [m] height of CoM
 vehicle.g            = 9.81;        % [m/sec^2] gravity
 vehicle.m            = 1700;        % [kg]      mass
 vehicle.Fz           = vehicle.m*vehicle.g;
-vehicle.Fzr          = vehicle.Fz*vehicle.a/vehicle.L;
-vehicle.Fzf          = vehicle.Fz*vehicle.b/vehicle.L;
+vehicle.Fzr_stat     = vehicle.Fz*vehicle.a/vehicle.L;
+vehicle.Fzf_stat     = vehicle.Fz*vehicle.b/vehicle.L;
 vehicle.Iz           = 2300;        % 
 
 %     // roll centers and CG height location

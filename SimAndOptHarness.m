@@ -16,10 +16,10 @@ addpath('DriftEquilibriumScripts');
 
 %% Define Parameters
 % Horizon length
-p.T             = 4;                % [sec]   Total time to hit target
-p.dt            = 0.05;             % [sec]   Time step
+p.T             = 2;                % [sec]   Total time to hit target
+p.dt            = 0.025;             % [sec]   Time step
 p.N             = round(p.T/p.dt);  %         # of time steps
-p.nSS           = 1;               %         # of steps in SS constraint
+p.nSS           = 1;                %         # of steps in SS constraint
 % Check N*dt = T
 
 % load MARTY parameters
@@ -56,12 +56,18 @@ fprintf(message, R, eqStates.V, p.Ux_f, p.Uy_f, beta*180/pi, beta, eqStates.r*18
                          
 
 %% NLP Settings
-settings                   = sdpsettings;
-settings.solver            = 'ipopt';
-settings.ipopt.print_level = 5;
-settings.ipopt.tol         = 1e-1;
-settings.verbose           = 3;
-settings.debug             = 1;
+settings                        = sdpsettings;
+settings.solver                 = 'ipopt';
+settings.ipopt.print_level      = 5;            % default = 5
+settings.ipopt.tol              = 1e-3;         % default = 1e-8
+settings.ipopt.dual_inf_tol     = 1;            % default = 1
+settings.ipopt.constr_viol_tol  = 1e-2;         % default = 1e-4
+settings.ipopt.compl_inf_tol    = 1e-4;         % default = 1e-4
+settings.ipopt.acceptable_tol   = 1e-6;         % default = 1e-6
+settings.ipopt.acceptable_iter  = 10;           % default = 15
+    % tolerance info: https://www.coin-or.org/Ipopt/documentation/node42.html#SECTION000112010000000000000
+settings.verbose                = 3;
+settings.debug                  = 1;
 
 
 %% Optimization Object
@@ -100,6 +106,10 @@ delta       = sol.input.delta;
 % Time
 N           = p.N;
 t           = p.dt*(0:N);
+
+
+%% Print Results
+fprintf('\n||slack|| = %.1f \n',norm(sol.variable.slack));
 
 
 %% Plot Results

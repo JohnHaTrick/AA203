@@ -54,8 +54,7 @@ subplot(5,2,7); hold on; box on
 subplot(5,2,8); hold on; box on
     plot(t,Uy,'k'); grid on
     ylabel('U_y [m/s]')
-    set(gca,'xticklabel',{})
-
+    set(gca,'xticklabel',{})subplot()
 
     
 %% Input Variables
@@ -83,8 +82,8 @@ ylabel('N [m]')
 
 % draw MARTY
 for i = 1:N+1
-    if mod(i-1,10) == 0
-        w = 2;    l = 3;    t = 1;
+    if mod(i-1,15) == 0
+        w = 1.5;    l = 2;    t = .7;
         R   = plot([xE(i)-w/2, xE(i)+w/2], ...
                    [yN(i)-l/2, yN(i)-l/2],'Color',[.5 .5 .5],'LineWidth',2);
         F   = plot([xE(i)+w/2, xE(i)-w/2], ...
@@ -92,13 +91,13 @@ for i = 1:N+1
         C   = plot([xE(i),     xE(i)], ...
                    [yN(i)-l/2, yN(i)+l/2],'Color',[.5 .5 .5],'LineWidth',2);
         Wrr = plot([xE(i)+w/2, xE(i)+w/2], ...
-                   [yN(i)-l/2-t/2, yN(i)-l/2+t/2],'k','LineWidth',2);
+                   [yN(i)-l/2-t/2, yN(i)-l/2+t/2],'k','LineWidth',3);
         Wrl = plot([xE(i)-w/2, xE(i)-w/2], ...
-                   [yN(i)-l/2-t/2, yN(i)-l/2+t/2],'k','LineWidth',2);
+                   [yN(i)-l/2-t/2, yN(i)-l/2+t/2],'k','LineWidth',3);
         Wfr = plot([xE(i)+w/2, xE(i)+w/2], ...
-                   [yN(i)+l/2-t/2, yN(i)+l/2+t/2],'k','LineWidth',2);
+                   [yN(i)+l/2-t/2, yN(i)+l/2+t/2],'k','LineWidth',3);
         Wfl = plot([xE(i)-w/2, xE(i)-w/2], ...
-                   [yN(i)+l/2-t/2, yN(i)+l/2+t/2],'k','LineWidth',2);
+                   [yN(i)+l/2-t/2, yN(i)+l/2+t/2],'k','LineWidth',3);
         rotate(Wfr, [0 0 1], delta(min(i,N))*180/pi, [xE(i)+w/2,yN(i)+l/2,0]);
         rotate(Wfl, [0 0 1], delta(min(i,N))*180/pi, [xE(i)-w/2,yN(i)+l/2,0]);
         rotate(Wrr, [0 0 1], Psi(i)*180/pi, [xE(i),yN(i),0]);
