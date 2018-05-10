@@ -54,8 +54,7 @@ subplot(5,2,7); hold on; box on
 subplot(5,2,8); hold on; box on
     plot(t,Uy,'k'); grid on
     ylabel('U_y [m/s]')
-    set(gca,'xticklabel',{})subplot()
-
+    set(gca,'xticklabel',{})
     
 %% Input Variables
 figure('Name','Input Variables','Position',[800 50 400 500])
