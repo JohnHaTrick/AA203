@@ -13,13 +13,14 @@ clear all; close all; clc
 %addpath(genpath('..\..\MATLAB\YALMIP-master'));
 addpath('DriftEquilibriumScripts');
 
-
+%% Integration Scheme (Euler's vs Trapz)
+integration = 0; %0-Euler's, 1-Heun's
 %% Define Parameters
 % Horizon length
 %p.T             = 2;                % [sec]   Total time to hit target
 %p.dt            = 0.025;             % [sec]   Time step
 p.dtmin         = 0.01;
-p.dtmax         = 0.05;
+p.dtmax         = 0.25;
 p.N             = 100;  %         # of time steps
 p.nSS           = 1;                %         # of steps in SS constraint
 % Check N*dt = T
@@ -73,7 +74,7 @@ settings.debug                  = 1;
 
 
 %% Optimization Object
-[objective, constraints, variables] = DriftNonlinear(p);
+[objective, constraints, variables] = DriftNonlinear(p,integration);
 
 
 %% Solve
