@@ -81,7 +81,7 @@ xlabel('E [m]')
 ylabel('N [m]')
 
 % draw MARTY
-for i = 1:N+1
+for i = N+1:-1:1
     if mod(i-1,15) == 0
         w = 1.5;    l = 2;    t = .7;
         R   = plot([xE(i)-w/2, xE(i)+w/2], ...

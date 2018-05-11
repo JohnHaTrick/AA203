@@ -16,7 +16,7 @@ addpath('DriftEquilibriumScripts');
 
 %% Define Parameters
 % Horizon length
-p.T             = 2;                % [sec]   Total time to hit target
+p.T             = 0.075;                % [sec]   Total time to hit target
 p.dt            = 0.025;             % [sec]   Time step
 p.N             = round(p.T/p.dt);  %         # of time steps
 p.nSS           = 1;                %         # of steps in SS constraint
@@ -42,17 +42,19 @@ R           = 6;                    % [m]     Radius of drift (chosen)
 beta        = -30*(pi/180);         % [rad]   Drift sideslip (chosen)
 %   calculate driftEq r, V, delta, Fxr
 eqStates    = calcDriftEqStates(R,beta,vehicle);
-p.E_f       = 0;                    % [m]     Final East position
-p.N_f       = 40;                   % [m]     Final North position
-p.Psi_f     = -beta;                % [rad]   Final Orientation
-p.Ux_f      = eqStates.V*cos(beta); % [m/s]   Final x speed
-p.Uy_f      = eqStates.V*sin(beta); % [m/s]   Final y speed
-p.r_f       = eqStates.r;           % [rad/s] Final yaw rate
-p.delta_f   = eqStates.delta;       % [rad]   Final steer angle
+p.E_0      = 0;                    % [m]     Final East position
+p.N_0       = 40;                   % [m]     Final North position
+p.Psi_0     = -beta;                % [rad]   Final Orientation
+p.Ux_0      = eqStates.V*cos(beta); % [m/s]   Final x speed
+p.Uy_0      = eqStates.V*sin(beta); % [m/s]   Final y speed
+p.r_0       = eqStates.r;           % [rad/s] Final yaw rate
+p.delta_0   = eqStates.delta;       % [rad]   Final steer angle
 message = ['Aiming to drift about a left turn with:\n    radius %.1f m\n' ...
            '    speed %.1f m/s (Ux %.1f & Uy %.1f)\n    beta %.1f deg (%.1f rad)\n' ...
            '    yaw rate %.1f deg/s (%.1f rad/s)\n\n'];
-fprintf(message, R, eqStates.V, p.Ux_f, p.Uy_f, beta*180/pi, beta, eqStates.r*180/pi, eqStates.r);
+       
+       
+%fprintf(message, R, eqStates.V, p.Ux_f, p.Uy_f, beta*180/pi, beta, eqStates.r*180/pi, eqStates.r);
                          
 
 %% NLP Settings
@@ -109,8 +111,20 @@ t           = p.dt*(0:N);
 
 
 %% Print Results
-fprintf('\n||slack|| = %.1f \n',norm(sol.variable.slack));
+%fprintf('\n||slack|| = %.1f \n',norm(sol.variable.slack));
+message = ['Initializing from John Gohs eq script output:\n    radius %.1f m\n' ...
+           '    speed %.1f m/s (Ux %.1f & Uy %.1f)\n    beta %.1f deg (%.1f rad)\n' ...
+           '    yaw rate %.1f deg/s (%.1f rad/s)\n\n'];
+fprintf(message, R, eqStates.V, p.Ux_0, p.Uy_0, beta*180/pi, beta, eqStates.r*180/pi, eqStates.r);
 
+message = ['Deviation from equilibrium:\n    dUx_dt %.1f m/s^2\n' ...
+           '    dUy_dt %.1f m/s^2\n', ' dr_dt %.1f deg/s^2 (%.1f rad/s^2)\n\n'];
+fprintf(message, Ux(N+1)-Ux(N), Uy(N+1)-Uy(N), (r(N+1)-r(N))*180./pi,r(N+1)-r(N));
+
+message = ['Terminal Conditions:\n' ...
+           '    speed %.1f m/s (Ux %.1f & Uy %.1f)\n    beta %.1f deg (%.1f rad)\n' ...
+           '    yaw rate %.1f deg/s (%.1f rad/s)\n\n'];
+fprintf(message, sqrt(Ux(N+1)^2+Uy(N+1)^2), Ux(N+1), Uy(N+1), tan(Uy(end)./Ux(end))*180/pi, tan(Uy(end)./Ux(end)), r(N+1)*180/pi, r(N+1));
 
 %% Plot Results
 plotNonlinearSoln(t,sol,p,eqStates);
