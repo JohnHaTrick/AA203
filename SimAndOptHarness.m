@@ -19,7 +19,7 @@ addpath('DriftEquilibriumScripts');
 %p.T             = 2;                % [sec]   Total time to hit target
 %p.dt            = 0.025;             % [sec]   Time step
 p.dtmin         = 0.01;
-p.dtmax         = 0.1;
+p.dtmax         = 0.05;
 p.N             = 100;  %         # of time steps
 p.nSS           = 1;                %         # of steps in SS constraint
 % Check N*dt = T
@@ -45,7 +45,7 @@ beta        = -30*(pi/180);         % [rad]   Drift sideslip (chosen)
 %   calculate driftEq r, V, delta, Fxr
 eqStates    = calcDriftEqStates(R,beta,vehicle);
 p.E_f       = 0;                    % [m]     Final East position
-p.N_f       = 40;                   % [m]     Final North position
+p.N_f       = 30;                   % [m]     Final North position
 p.Psi_f     = -beta;                % [rad]   Final Orientation
 p.Ux_f      = eqStates.V*cos(beta); % [m/s]   Final x speed
 p.Uy_f      = eqStates.V*sin(beta); % [m/s]   Final y speed
@@ -107,8 +107,8 @@ delta       = sol.input.delta;
 
 % Time
 N           = p.N;
-t           = cumsum([0 sol.variable.dt]);%p.dt*(0:N);
-
+%t           = cumsum([0 sol.variable.dt]);%p.dt*(0:N);
+t = [0:sol.variable.dt:100*sol.variable.dt];
 
 %% Print Results
 fprintf('\n||slack|| = %.1f \n',norm(sol.variable.slack));

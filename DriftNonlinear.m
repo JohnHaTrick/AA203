@@ -23,7 +23,7 @@ Fxr     = mdlvar(N,1e4);
 Fzr     = mdlvar(N,1e4);
 Xi      = mdlvar(N,1);
 slack   = mdlvar(N,1);
-dt      = mdlvar(N,1e-2);
+dt      = mdlvar(1,1e-2);
 
 % STATE VARIABLES
 xE      = mdlvar(N+1,10,'state');
@@ -50,6 +50,7 @@ assign(Fxr.variable,    zeros(1,N))
 assign(Fzr.variable,    ones(1,N))
 assign(Xi.variable,     ones(1,N))
 % assign(slack.variable,  zeros(1,N+1))
+assign(dt.variable, 0.01)
 
 % STATE VARIABLES
 assign(xE.variable,     zeros(1,N+1))
@@ -72,21 +73,21 @@ constraints = [ constraints
 % Differential Equations, Euler Integration
 constraints = [ constraints
     ( diff(xE.variable)  == (-   Ux.physical(1:N).*sin(Psi.physical(1:N)) ...
-                            -    Uy.physical(1:N).*cos(Psi.physical(1:N)))*dt/xE.const ): 'East Position'
+                            -    Uy.physical(1:N).*cos(Psi.physical(1:N))).*dt.physical/xE.const ): 'East Position'
     ( diff(yN.variable)  == (    Ux.physical(1:N).*cos(Psi.physical(1:N)) ...
-                            -    Uy.physical(1:N).*sin(Psi.physical(1:N)))*dt/yN.const ): 'North Position'
-    ( diff(Psi.variable) ==       r.physical(1:N)*dt/Psi.const ):                         'Orientation'
+                            -    Uy.physical(1:N).*sin(Psi.physical(1:N))).*dt.physical/yN.const ): 'North Position'
+    ( diff(Psi.variable) ==       r.physical(1:N).*dt.physical/Psi.const ):                         'Orientation'
     ( diff(Ux.variable)  == (   Fxf.physical.*cos(delta.physical) ...
                             -   Fyf.physical.*sin(delta.physical) ...
                             +   Fxr.physical                      ...
-                            +   m*r.physical(1:N).*Uy.physical(1:N))/m*dt/Ux.const ):     'x Velocity'
+                            +   m*r.physical(1:N).*Uy.physical(1:N))/m.*dt.physical/Ux.const ):     'x Velocity'
     ( diff(Uy.variable)  == (   Fxf.physical.*sin(delta.physical) ...
                             +   Fyf.physical.*cos(delta.physical) ...
                             +   Fyr.physical                      ...
-                            -   m*r.physical(1:N).*Ux.physical(1:N))/m*dt/Uy.const ):     'y Velocity'
+                            -   m*r.physical(1:N).*Ux.physical(1:N))./m.*dt.physical/Uy.const ):     'y Velocity'
     ( diff(r.variable)   == ( a*Fyf.physical.*cos(delta.physical) ...
                             + a*Fxf.physical.*sin(delta.physical) ...
-                            - b*Fyr.physical)/Iz*dt/r.const ):                            'Yaw rate'
+                            - b*Fyr.physical)/Iz.*dt.physical/r.const ):                            'Yaw rate'
     
 %     ( diff(Ux.variable(end-nSS:end))    == 0 ): 'x Velocity Eq in the end'
 %     ( diff(Uy.variable(end-nSS:end))    == 0 ): 'y Velocity Eq in the end'
