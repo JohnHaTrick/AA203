@@ -10,15 +10,17 @@ clear all; close all; clc
 
 %% Include Dependencies into Path
 % comment this if you already have YALMIP in your path somewhere else...
-addpath(genpath('..\..\MATLAB\YALMIP-master'));
+%addpath(genpath('..\..\MATLAB\YALMIP-master'));
 addpath('DriftEquilibriumScripts');
 
 
 %% Define Parameters
 % Horizon length
-p.T             = 2;                % [sec]   Total time to hit target
-p.dt            = 0.025;             % [sec]   Time step
-p.N             = round(p.T/p.dt);  %         # of time steps
+%p.T             = 2;                % [sec]   Total time to hit target
+%p.dt            = 0.025;             % [sec]   Time step
+p.dtmin         = 0.01;
+p.dtmax         = 0.1;
+p.N             = 100;  %         # of time steps
 p.nSS           = 1;                %         # of steps in SS constraint
 % Check N*dt = T
 
@@ -105,7 +107,7 @@ delta       = sol.input.delta;
 
 % Time
 N           = p.N;
-t           = p.dt*(0:N);
+t           = cumsum([0 sol.variable.dt]);%p.dt*(0:N);
 
 
 %% Print Results

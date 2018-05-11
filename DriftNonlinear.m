@@ -23,6 +23,7 @@ Fxr     = mdlvar(N,1e4);
 Fzr     = mdlvar(N,1e4);
 Xi      = mdlvar(N,1);
 slack   = mdlvar(N,1);
+dt      = mdlvar(N,1e-2);
 
 % STATE VARIABLES
 xE      = mdlvar(N+1,10,'state');
@@ -61,6 +62,12 @@ assign(r.variable,      zeros(1,N+1))
 
 %% Inizialize Constraints
 constraints = [];
+
+% Time constraint
+constraints = [ constraints
+    dt.variable >= dtmin/dt.const
+    dt.variable <= dtmax/dt.const
+    ];
 
 % Differential Equations, Euler Integration
 constraints = [ constraints
