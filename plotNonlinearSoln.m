@@ -33,7 +33,7 @@ subplot(5,2,3); hold on; box on
     plot(t,Psi/pi*180,'k'); grid on
     set(gca,'xticklabel',{})
     ylabel('\Psi [deg]')
-subplot(5,2,4); hold on; grid on;
+subplot(5,2,4); hold on; box on;
     plot(t,tan(Uy./Ux),'k'); grid on
     plot(t,eqStates.beta*ones(size(t)),'k--')
     ylabel('beta [rad]')
@@ -54,21 +54,22 @@ subplot(5,2,7); hold on; box on
 subplot(5,2,8); hold on; box on
     plot(t,Uy,'k'); grid on
     ylabel('U_y [m/s]')
-    set(gca,'xticklabel',{})
+%     set(gca,'xticklabel',{})
     
 %% Input Variables
 figure('Name','Input Variables','Position',[800 50 400 500])
-subplot(211); hold on; box on
+ax(1) = subplot(211); hold on; box on
     stairs(t(1:N),Tr,'k'); grid on
     ylabel('T_r [Nm]')
     ylim([p.Tmin, p.Tmax])
     set(gca,'xticklabel',{})
-subplot(212); hold on; box on
+ax(2) = subplot(212); hold on; box on
     stairs(t(1:N),delta*180/pi,'k'); grid on
     plot(t,eqStates.delta*180/pi*ones(size(t)),'k--')
     ylabel('\delta [deg]')
     xlabel('t [s]')
     ylim([-p.deltaMax*180/pi, p.deltaMax*180/pi])
+    linkaxes(ax,'x');
 
     
 %% Global Position Trajectory
