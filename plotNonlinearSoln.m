@@ -23,25 +23,29 @@ delta       = sol.input.delta;
 figure('Name','State Variables','Position',[0 50 800 950])
 subplot(5,2,1); hold on; box on
     plot(t,xE,'k'); grid on
+    %plot(t,eqStates.E_f*ones(size(t)),'k--')
     ylabel('E [m]')
     set(gca,'xticklabel',{})
 subplot(5,2,2); hold on; box on
     plot(t,yN,'k'); grid on
+    %plot(t,eqStates.N_f*ones(size(t)),'k--')
     ylabel('N [m]')
     set(gca,'xticklabel',{})
 subplot(5,2,3); hold on; box on
     plot(t,Psi/pi*180,'k'); grid on
+    %plot(t,eqStates.Psi_f*ones(size(t)),'k--')
     set(gca,'xticklabel',{})
     ylabel('\Psi [deg]')
 subplot(5,2,4); hold on; box on;
-    plot(t,tan(Uy./Ux),'k'); grid on
-    plot(t,eqStates.beta*ones(size(t)),'k--')
+    plot(t,atan(Uy./Ux)/pi*180,'k'); grid on
+    plot(t,eqStates.beta*ones(size(t))/pi*180,'k--')
+    set(gca,'xticklabel',{})
     ylabel('beta [rad]')
 subplot(5,2,5); hold on; box on
     plot(t,r,'k'); grid on
     plot(t,eqStates.r*ones(size(t)),'k--')
     ylabel('r [rad/s]')
-    xlabel('t [s]')
+    set(gca,'xticklabel',{})
 subplot(5,2,6); hold on; box on
     plot(t,sqrt(Ux.^2+Uy.^2),'k'); grid on
     plot(t,eqStates.V*ones(size(t)),'k--')
@@ -49,22 +53,27 @@ subplot(5,2,6); hold on; box on
     set(gca,'xticklabel',{})
 subplot(5,2,7); hold on; box on
     plot(t,Ux,'k'); grid on
+    plot(t,eqStates.Ux*ones(size(t)),'k--')
     ylabel('U_x [m/s]')
-    set(gca,'xticklabel',{})
+    xlabel('t [s]')
+    %set(gca,'xticklabel',{})
 subplot(5,2,8); hold on; box on
     plot(t,Uy,'k'); grid on
+    plot(t,eqStates.Uy*ones(size(t)),'k--')
     ylabel('U_y [m/s]')
-%     set(gca,'xticklabel',{})
+    %set(gca,'xticklabel',{})
+
     
 %% Input Variables
 figure('Name','Input Variables','Position',[800 50 400 500])
 ax(1) = subplot(211); hold on; box on
-    stairs(t(1:N),Tr,'k'); grid on
+    stairs(t(1:N),Tr(1:N),'k'); grid on
     ylabel('T_r [Nm]')
-    ylim([p.Tmin, p.Tmax])
+%     ylim([p.Tmin, p.Tmax])
+    ylim([-5000, 5000])
     set(gca,'xticklabel',{})
 ax(2) = subplot(212); hold on; box on
-    stairs(t(1:N),delta*180/pi,'k'); grid on
+    stairs(t(1:N),delta(1:N)*180/pi,'k'); grid on
     plot(t,eqStates.delta*180/pi*ones(size(t)),'k--')
     ylabel('\delta [deg]')
     xlabel('t [s]')
