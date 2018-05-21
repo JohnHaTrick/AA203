@@ -90,8 +90,8 @@ xlabel('E [m]')
 ylabel('N [m]')
 
 % draw MARTY
-for i = N+1
-    %if mod(i-1,15) == 0
+for i = N+1:-1:1
+    if mod(i-1,10) == 0
         w = 1.5;    l = 2;    t = .7;
         R   = plot([xE(i)-w/2, xE(i)+w/2], ...
                    [yN(i)-l/2, yN(i)-l/2],'Color',[.5 .5 .5],'LineWidth',2);
@@ -118,7 +118,7 @@ for i = N+1
         rotate(C,   [0 0 1], Psi(i)*180/pi, [xE(i),yN(i),0]);
         refreshdata
         drawnow
-    %end
+    end
 end
 
 % draw target circle

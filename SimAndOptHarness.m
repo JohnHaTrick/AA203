@@ -14,15 +14,15 @@ clear all; close all; clc
 addpath('DriftEquilibriumScripts');
 
 %% Integration Scheme (Euler's vs Trapz)
-integration = 1; %0-Euler's, 1-Heun's
+integration = 0; %0-Euler's, 1-Heun's
 %% Define Parameters
 % Horizon length
 %p.T             = 2;                % [sec]   Total time to hit target
 %p.dt            = 0.025;             % [sec]   Time step
-p.dtmin         = 0.01;
-p.dtmax         = 0.25;
-p.N             = 50;  %         # of time steps
-p.nSS           = 1;                %         # of steps in SS constraint
+p.dtmin         = 0.001;
+p.dtmax         = 0.05;
+p.N             = 100;  %         # of time steps
+p.nSS           = 10;                %         # of steps in SS constraint
 % Check N*dt = T
 
 % load MARTY parameters
@@ -115,8 +115,7 @@ delta       = sol.input.delta;
 
 % Time
 N           = p.N;
-%t           = cumsum([0 sol.variable.dt]);%p.dt*(0:N);
-t = [0:sol.variable.dt:p.N*sol.variable.dt];
+t           = cumsum([0 sol.variable.dt]);
 
 %% Print Results
 fprintf('\ndUx/dt = %f\n',(Ux(end)-Ux(end-1))/(t(end)-t(end-1)));
