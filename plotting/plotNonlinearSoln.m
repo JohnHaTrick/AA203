@@ -1,4 +1,4 @@
-function plotNonlinearSoln( t, sol, p, eqStates)
+function plotNonlinearSoln( t, sol, p)
 %PLOTNONLINEARSOLN
 %   Plot solution of AA203 nonlinear trajectory
 
@@ -6,6 +6,7 @@ close all;
 
 %% Parse Solution Data
 N = size(t,2)-1;
+dt          = sol.variable.dt;
 % State Variables
 xE          = sol.state.xE;
 yN          = sol.state.yN;
@@ -38,28 +39,28 @@ subplot(5,2,3); hold on; box on
     ylabel('\Psi [deg]')
 subplot(5,2,4); hold on; box on;
     plot(t,atan(Uy./Ux)/pi*180,'k'); grid on
-    plot(t,eqStates.beta*ones(size(t))/pi*180,'k--')
+    plot(t,p.beta_f*ones(size(t))/pi*180,'k--')
     set(gca,'xticklabel',{})
     ylabel('beta [rad]')
 subplot(5,2,5); hold on; box on
     plot(t,r,'k'); grid on
-    plot(t,eqStates.r*ones(size(t)),'k--')
+    plot(t,p.r_f*ones(size(t)),'k--')
     ylabel('r [rad/s]')
     set(gca,'xticklabel',{})
 subplot(5,2,6); hold on; box on
     plot(t,sqrt(Ux.^2+Uy.^2),'k'); grid on
-    plot(t,eqStates.V*ones(size(t)),'k--')
+    plot(t,p.V_f*ones(size(t)),'k--')
     ylabel('V [m/s]')
     set(gca,'xticklabel',{})
 subplot(5,2,7); hold on; box on
     plot(t,Ux,'k'); grid on
-    plot(t,eqStates.Ux*ones(size(t)),'k--')
+    plot(t,p.Ux_f*ones(size(t)),'k--')
     ylabel('U_x [m/s]')
     xlabel('t [s]')
     %set(gca,'xticklabel',{})
 subplot(5,2,8); hold on; box on
     plot(t,Uy,'k'); grid on
-    plot(t,eqStates.Uy*ones(size(t)),'k--')
+    plot(t,p.Uy_f*ones(size(t)),'k--')
     ylabel('U_y [m/s]')
     set(gca,'xticklabel',{})
 subplot(5,2,9); hold on; grid on;
@@ -68,7 +69,11 @@ subplot(5,2,9); hold on; grid on;
     plot(t, .5*(p.m*(Ux.^2+Uy.^2)+p.Iz*sol.state.r.^2),'--')
     legend('Rotational KE', 'Translational KE', 'Total KE')
     ylabel('Joules')
-
+subplot(5,2,10); hold on; grid on;
+    plot(dt*1000)
+    title('solution time steps')
+    xlabel('iterations')
+    ylabel('msec')
     
 %% Input Variables
 figure('Name','Input Variables','Position',[800 50 400 500])
@@ -80,7 +85,7 @@ ax(1) = subplot(211); hold on; box on
     set(gca,'xticklabel',{})
 ax(2) = subplot(212); hold on; box on
     stairs(t(1:N),delta(1:N)*180/pi,'k'); grid on
-    plot(t,eqStates.delta*180/pi*ones(size(t)),'k--')
+    plot(t,p.delta_f*180/pi*ones(size(t)),'k--')
     ylabel('\delta [deg]')
     xlabel('t [s]')
     ylim([-p.deltaMax*180/pi, p.deltaMax*180/pi])
@@ -97,7 +102,7 @@ ylabel('N [m]')
 
 % draw MARTY
 for j = 0:N
-    if mod(j-1,35) == 0
+    if mod(j-1,20) == 0
         i = N+1-j;
         w = 1.5;    l = 2;    t = .7;
         R   = plot([xE(i)-w/2, xE(i)+w/2], ...
