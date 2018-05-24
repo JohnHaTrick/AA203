@@ -10,8 +10,8 @@ clear all; close all; clc
 
 %% Include Dependencies into Path
 % comment this if you already have YALMIP in your path somewhere else...
-addpath(genpath('..\..\MATLAB\YALMIP-master'));
-addpath('DriftEquilibriumScripts');
+addpath(genpath('..\AA203'));
+% addpath(genpath('..\..\MATLAB\YALMIP-master'));
 
 
 %% Define Parameters
@@ -65,7 +65,7 @@ settings.ipopt.constr_viol_tol  = 1e-2;         % default = 1e-4
 settings.ipopt.compl_inf_tol    = 1e-4;         % default = 1e-4
 settings.ipopt.acceptable_tol   = 1e-6;         % default = 1e-6
 settings.ipopt.acceptable_iter  = 10;           % default = 15
-    % tolerance info: https://www.coin-or.org/Ipopt/documentation/node42.html#SECTION000112010000000000000
+    % tol info: https://www.coin-or.org/Ipopt/documentation/node42.html#SECTION000112010000000000000
 settings.verbose                = 3;
 settings.debug                  = 1;
 
