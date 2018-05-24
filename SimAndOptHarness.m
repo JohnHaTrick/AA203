@@ -14,12 +14,16 @@ addpath(genpath('..\AA203'));
 % addpath(genpath('..\..\MATLAB\YALMIP-master'));
 
 
+%% Integration Scheme (Euler's vs Trapz)
+integration = 0; %0-Euler's, 1-Heun's
 %% Define Parameters
 % Horizon length
-p.T             = 2;                % [sec]   Total time to hit target
-p.dt            = 0.025;             % [sec]   Time step
-p.N             = round(p.T/p.dt);  %         # of time steps
-p.nSS           = 1;                %         # of steps in SS constraint
+%p.T             = 2;                % [sec]   Total time to hit target
+%p.dt            = 0.025;             % [sec]   Time step
+p.dtmin         = 0.001;
+p.dtmax         = 0.05;
+p.N             = 100;  %         # of time steps
+p.nSS           = 10;                %         # of steps in SS constraint
 % Check N*dt = T
 
 % load MARTY parameters
@@ -38,22 +42,29 @@ p.Uy_0      = 0;                    % [m/s]   Initial y speed
 p.r_0       = 0;                    % [rad/s] Initial yaw rate
 
 % Terminal drift conditions
+load('sol_Equilibrium.mat');
 R           = 6;                    % [m]     Radius of drift (chosen)
-beta        = -30*(pi/180);         % [rad]   Drift sideslip (chosen)
+beta        = atan(final.state.Uy/final.state.Ux);         % [rad]   Drift sideslip (chosen)
 %   calculate driftEq r, V, delta, Fxr
-eqStates    = calcDriftEqStates(R,beta,vehicle);
+%eqStates    = calcDriftEqStates(R,beta,vehicle);
 p.E_f       = 0;                    % [m]     Final East position
-p.N_f       = 40;                   % [m]     Final North position
+p.N_f       = 20;                   % [m]     Final North position
 p.Psi_f     = -beta;                % [rad]   Final Orientation
-p.Ux_f      = eqStates.V*cos(beta); % [m/s]   Final x speed
-p.Uy_f      = eqStates.V*sin(beta); % [m/s]   Final y speed
-p.r_f       = eqStates.r;           % [rad/s] Final yaw rate
-p.delta_f   = eqStates.delta;       % [rad]   Final steer angle
-message = ['Aiming to drift about a left turn with:\n    radius %.1f m\n' ...
-           '    speed %.1f m/s (Ux %.1f & Uy %.1f)\n    beta %.1f deg (%.1f rad)\n' ...
-           '    yaw rate %.1f deg/s (%.1f rad/s)\n\n'];
-fprintf(message, R, eqStates.V, p.Ux_f, p.Uy_f, beta*180/pi, beta, eqStates.r*180/pi, eqStates.r);
+p.Ux_f      = final.state.Ux; % [m/s]   Final x speed
+p.Uy_f      = final.state.Uy; % [m/s]   Final y speed
+p.r_f       = final.state.r;           % [rad/s] Final yaw rate
+p.Tr_f      = final.input.Tr;       % [Nm]   Final torque
+p.delta_f   = final.input.delta;       % [rad]   Final steer angle
+% message = ['Aiming to drift about a left turn with:\n    radius %.1f m\n' ...
+%            '    speed %.1f m/s (Ux %.1f & Uy %.1f)\n    beta %.1f deg (%.1f rad)\n' ...
+%            '    yaw rate %.1f deg/s (%.1f rad/s)\n\n'];
+% fprintf(message, R, eqStates.V, p.Ux_f, p.Uy_f, beta*180/pi, beta, eqStates.r*180/pi, eqStates.r);
                          
+eqStates    = final.state;
+eqStates.Tr = final.input.Tr;
+eqStates.delta = final.input.delta;
+eqStates.beta = beta;
+eqStates.V   = sqrt(eqStates.Ux^2 + eqStates.Uy^2);
 
 %% NLP Settings
 settings                        = sdpsettings;
@@ -71,7 +82,7 @@ settings.debug                  = 1;
 
 
 %% Optimization Object
-[objective, constraints, variables] = DriftNonlinear(p);
+[objective, constraints, variables] = DriftNonlinear(p,integration);
 
 
 %% Solve
@@ -105,12 +116,27 @@ delta       = sol.input.delta;
 
 % Time
 N           = p.N;
-t           = p.dt*(0:N);
-
+t           = cumsum([0 sol.variable.dt]);
 
 %% Print Results
-fprintf('\n||slack|| = %.1f \n',norm(sol.variable.slack));
+fprintf('\ndUx/dt = %f\n',(Ux(end)-Ux(end-1))/(t(end)-t(end-1)));
+fprintf('dUy/dt = %f\n',(Uy(end)-Uy(end-1))/(t(end)-t(end-1)));
+fprintf('dr/dt = %f\n',(r(end)-r(end-1))/(t(end)-t(end-1)));
 
+fprintf('\n((xE-E_f)/10)^2 = %f \n',((xE(end)-p.E_f)/10)^2);
+fprintf('((yN-N_f)/10)^2 = %f \n',((xE(end)-p.N_f)/10)^2);
+fprintf('((Psi-Psi_f)/10)^2 = %f \n',((Psi(end)-p.Psi_f))^2);
+fprintf('sum(abs(Tr))/N = %f \n',sum(abs(Tr))/N);
+fprintf('100*sum(diff(delta).^2)/N = %f \n',100*sum(diff(delta).^2)/N);
+fprintf('sum(dt)/N = %f \n',sum(diff(t))/N);
+% objective = ( ...
+%     + (xE.variable(N+1)  - E_f/Ux.const)^2 ...
+%     + (yN.variable(N+1)  - N_f/Uy.const)^2 ...
+%     + (Psi.variable(N+1)   - Psi_f/r.const)^2 ...
+%     + sum(abs(Tr.variable))/N ...
+%     + 100*sum(diff(delta.variable).^2)/N ...
+%     + sum(dt.variable)/N ...
+%     );
 
 %% Plot Results
 plotNonlinearSoln(t,sol,p,eqStates);
