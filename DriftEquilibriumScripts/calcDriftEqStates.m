@@ -3,6 +3,7 @@ function eqStates = calcDriftEqStates(R, beta, vehicle)
 %   Detailed explanation goes here
 
 eqStates.beta = beta;
+eqStates.R = R;
 
 [eqStates.r,eqStates.V, eqStates.delta,eqStates.Fxr,exitflag] = solveDriftEquilibrium_simple(R,beta,vehicle);
 
