@@ -5,12 +5,12 @@ function vehicle = loadVehicleMARTY()
 vehicle.name = 'MARTY';
 
 %% dimensions & CG location
-vehicle.a          = 1.39;       % distance from front axle to CG
-vehicle.b          = 1.0008;     % distance from rear axle to CG
-vehicle.wt         = 1.6;        % track width: t? d? right symbol?
-% vehicle.width_m      = ?;        % physical width of the car
-vehicle.L          = vehicle.a + vehicle.b; % wheelbase
-vehicle.h          = .45;        % [m] height of CoM
+vehicle.a            = 1.39;        % distance from front axle to CG
+vehicle.b            = 1.0008;      % distance from rear axle to CG
+vehicle.wt           = 1.6;         % track width: t? d? right symbol?
+% vehicle.width_m      = ?;         % physical width of the car
+vehicle.L            = vehicle.a + vehicle.b; % wheelbase
+vehicle.h            = .45;         % [m] height of CoM
 
 %% mass & yaw inertia
 vehicle.g            = 9.81;        % [m/sec^2] gravity
@@ -30,13 +30,13 @@ vehicle.Iz           = 2300;        %
 
 
 %% Wheel properties
-vehicle.Rwf         = 0.29591;    % 205/45R16
-vehicle.Rwr         = 0.32;       % wheel effective radius
+vehicle.Rwf          = 0.29591;     % 205/45R16
+vehicle.Rwr          = 0.32;        % wheel effective radius
 
 
 %% Longitudinal force parameters
-vehicle.Tmax = 5400;                % maximum rear torque
-vehicle.Tmin = -15000;              % maximum brake torque
+vehicle.Tmax         =  5400;       % maximum rear torque
+vehicle.Tmin         = -15000;      % maximum brake torque
 
 % Drag stuff: FxDrag = Cd0 + Cd1*Vx + Cd2*Vx^2
 %     vehicle.Cd0_N        = 241.0;      // rolling resistance, updated by Joe 10/9/2014, .12*2009kg
@@ -45,24 +45,23 @@ vehicle.Tmin = -15000;              % maximum brake torque
 
 
 %% Steering properties
-vehicle.deltaMax = 0.671825;        % delta limit
-
-%     vehicle.deltaRateMax_radps = 0.344; // limit on change in delta
-%     vehicle.steerRatio   = 1;           // HWA to RWA
+vehicle.deltaMax     = 0.671825;    % [rad]   delta limit
+vehicle.deltaRateMax = 0.344;       % [rad/s] slew limit
+%     vehicle.steerRatio   = 1;           % HWA to RWA
 
 
 %% Tire  modeling
 %single friction brush tire model
-vehicle.mu           = 1;       % friction coefficient
-vehicle.muf          = 1;       % front friction coeff
-vehicle.mur          = 1;       % rear friction coeff
-vehicle.Caf          = 75000;   % [N/rad] front axel cornering stiffness
-vehicle.Car          = 275000;  % [N/rad] front axel cornering stiffness
+vehicle.mu           = 1;           % friction coefficient
+vehicle.muf          = 1;           % front friction coeff
+vehicle.mur          = 1;           % rear friction coeff
+vehicle.Caf          = 75000;       % [N/rad] front axle cornering stiffness
+vehicle.Car          = 275000;      % [N/rad] front axle cornering stiffness
 
 % logit tire modelling
 % weights found via script below
-vehicle.Wf        = 12.24;     % Front logit weight
-vehicle.Wr        = 60.10;     % Rear logit weight
+vehicle.Wf           = 12.24;       % Front logit weight
+vehicle.Wr           = 60.10;       % Rear logit weight
 
 % Pacejka Formulation vs. Logit
 % Uncomment to find / verify Wf / Wr logit params
@@ -107,8 +106,8 @@ vehicle.Wr        = 60.10;     % Rear logit weight
 
 
 %% Drift eq stats
-vehicle.ftire.Cx = 3e5;
-vehicle.rtire.Cx = 3e5; % what are these? Individual tire Ca?
+vehicle.ftire.Cx    = 3e5;
+vehicle.rtire.Cx    = 3e5;          % what are these? Individual tire Ca?
 
 end
 

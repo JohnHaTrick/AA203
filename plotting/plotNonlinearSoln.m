@@ -56,18 +56,19 @@ subplot(5,2,7); hold on; box on
     plot(t,Ux,'k'); grid on
     plot(t,p.Ux_f*ones(size(t)),'k--')
     ylabel('U_x [m/s]')
-    xlabel('t [s]')
-    %set(gca,'xticklabel',{})
+    set(gca,'xticklabel',{})
 subplot(5,2,8); hold on; box on
     plot(t,Uy,'k'); grid on
     plot(t,p.Uy_f*ones(size(t)),'k--')
+    xlabel('t [s]')
     ylabel('U_y [m/s]')
-    set(gca,'xticklabel',{})
+%     set(gca,'xticklabel',{})
 subplot(5,2,9); hold on; grid on;
     plot(t, .5*(p.Iz*sol.state.r.^2))
     plot(t, .5*(p.m*(Ux.^2+Uy.^2)))
     plot(t, .5*(p.m*(Ux.^2+Uy.^2)+p.Iz*sol.state.r.^2),'--')
     legend('Rotational KE', 'Translational KE', 'Total KE')
+    xlabel('t [s]')
     ylabel('Joules')
 subplot(5,2,10); hold on; grid on;
     plot(dt*1000)
@@ -76,21 +77,30 @@ subplot(5,2,10); hold on; grid on;
     ylabel('msec')
     
 %% Input Variables
-figure('Name','Input Variables','Position',[800 50 400 500])
-ax(1) = subplot(211); hold on; box on
-    stairs(t(1:N),Tr(1:N),'k'); grid on
+figure('Name','Input Variables','Position',[800 50 400 800])
+ax(1) = subplot(311); hold on; box on; grid on
+    stairs(t(1:N),Tr(1:N),'k')
     ylabel('T_r [Nm]')
 %     ylim([p.Tmin, p.Tmax])
     ylim([-5000, 5000])
     set(gca,'xticklabel',{})
-ax(2) = subplot(212); hold on; box on
-    stairs(t(1:N),delta(1:N)*180/pi,'k'); grid on
+ax(2) = subplot(312); hold on; box on; grid on
+    stairs(t(1:N),delta(1:N)*180/pi,'k')
     plot(t,p.delta_f*180/pi*ones(size(t)),'k--')
+    plot(t,p.deltaMax*ones(size(t))*180/pi,'--r')
+    plot(t,-p.deltaMax*ones(size(t))*180/pi,'--r')
+    linkaxes(ax,'x');
     ylabel('\delta [deg]')
     xlabel('t [s]')
-    ylim([-p.deltaMax*180/pi, p.deltaMax*180/pi])
-    linkaxes(ax,'x');
-
+    ylim([-1.1*p.deltaMax*180/pi, 1.1*p.deltaMax*180/pi])
+ax(3) = subplot(313); hold on; box on; grid on;
+    plot(diff(sol.input.delta)./sol.variable.dt(1:end-1),'k')
+    plot(p.deltaRateMax*ones(size(diff(sol.input.delta))),'--r')
+    plot(-p.deltaRateMax*ones(size(diff(sol.input.delta))),'--r')
+    title('Slew Rate')
+    xlabel('iteration #')
+    ylabel('rad/sec')
+    ylim([-5*p.deltaRateMax, 5*p.deltaRateMax])
     
 %% Global Position Trajectory
 figure('Name','Trajectory E-N','Position',[1200 50 700 700]);

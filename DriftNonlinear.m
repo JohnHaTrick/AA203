@@ -93,8 +93,9 @@ constraints = [];
 
 % Time constraint
 constraints = [ constraints
-    dt.variable >= dtmin/dt.const
-    dt.variable <= dtmax/dt.const
+    dt.variable      >= dtmin/dt.const
+    dt.variable      <= dtmax/dt.const
+%     sum(dt.variable) >= N*dtminAve/dt.const % keep total time above threshold
     ];
 
 % Differential Equations, Euler Integration
@@ -208,10 +209,12 @@ constraints = [ constraints
 constraints = [ constraints
     Tr.variable        <=  Tmax/Tr.const %+ slack.variable
     Tr.variable        >=  Tmin/Tr.const %+ slack.variable
-    %     Tr.variable        >= 0 % no brakes
+    %     Tr.variable        >= 0                                % no brakes
     delta.variable     <=  deltaMax/delta.const %+ slack.variable
     delta.variable     >= -deltaMax/delta.const %+ slack.variable
-    %     delta.variable     == 0 % no steering
+%         delta.variable     == 0                                % no steering
+%     diff(delta.physical)./dt.physical(1:end-1) <= deltaRateMax % slew rate
+%     diff(delta.physical)./dt.physical(1:end-1) >= -deltaRateMax
     ];
 
 %% Physical Constraints
