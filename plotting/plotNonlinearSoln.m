@@ -55,7 +55,13 @@ subplot(5,2,8); hold on; box on
     plot(t,Uy,'k'); grid on
     ylabel('U_y [m/s]')
     set(gca,'xticklabel',{})
-
+subplot(5,2,9); hold on; grid on;
+    plot(t, .5*(p.Iz*sol.state.r.^2))
+    plot(t, .5*(p.m*(Ux.^2+Uy.^2)))
+    plot(t, .5*(p.m*(Ux.^2+Uy.^2)+p.Iz*sol.state.r.^2),'--')
+    legend('Rotational KE', 'Translational KE', 'Total KE')
+    ylabel('Joules')
+    
     
 %% Input Variables
 figure('Name','Input Variables','Position',[800 50 400 500])
@@ -81,8 +87,9 @@ xlabel('E [m]')
 ylabel('N [m]')
 
 % draw MARTY
-for i = 1:N+1
-    if mod(i-1,15) == 0
+for j = 0:N
+    if mod(j-1,35) == 0
+        i = N+1-j;
         w = 1.5;    l = 2;    t = .7;
         R   = plot([xE(i)-w/2, xE(i)+w/2], ...
                    [yN(i)-l/2, yN(i)-l/2],'Color',[.5 .5 .5],'LineWidth',2);
