@@ -76,7 +76,7 @@ subplot(5,2,9); hold on; grid on;
 subplot(5,2,10); hold on; grid on;
     plot(dt*1000)
     title('solution time steps')
-    xlabel('iterations')
+    xlabel('stage')
     ylabel('msec')
     
 %% Input Variables

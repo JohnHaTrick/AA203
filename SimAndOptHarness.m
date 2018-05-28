@@ -24,9 +24,9 @@ integration = 0; %0-Euler's, 1-Heun's
 % p.dt        = 0.025;                    % [sec] Time step
 p.dtmin     = 0.01;                     % [sec] lower lim on dt
 p.dtmax     = 0.05;                     % [sec] upper lim on dt
-p.dtminAve  = 0.01;                     % [sec] keep average dt above this
+% p.dtminAve  = 0.01;                     % [sec] keep average dt above this
 p.nSS       = 2;                        % # of steps in SS constraint
-p.N         = 200 + p.nSS;              % # of time steps
+p.N         = 150 + p.nSS;              % # of time steps
 
 % load MARTY parameters
 vehicle     = loadVehicleMARTY();
@@ -85,7 +85,7 @@ settings.ipopt.acceptable_iter  = 10;   % default = 15
     % tol info: https://www.coin-or.org/Ipopt/documentation/node42.html#SECTION000112010000000000000
 settings.verbose                = 3;
 settings.debug                  = 1;
-
+settings.usex0 = 1;
 
 %% Optimization Object
 [objective, constraints, variables] = DriftNonlinear(p,integration);
@@ -140,4 +140,7 @@ plotNonlinearSoln(sol,p);
 
 %% Interpolate results to regular time interval
 % possibly add more dirfting states
-% interpResults = interpolateResults(sol);
+interpResults = interpolateResults(sol,p);
+
+
+

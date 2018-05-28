@@ -4,9 +4,9 @@ function sol = extendDrift( sol, p )
 %   Take those final inputs and velocity states, and extend the drift
 
 % Variables to extend:
-%   iterations: [ t, dt ]
-%   all inputs: [ Tr, delta ]
-%   all states: [ xE, yN, Psi, Ux, Uy, r ]
+%   time:   [ t, dt ]
+%   inputs: [ Tr, delta ]
+%   states: [ xE, yN, Psi, Ux, Uy, r ]
 
 
 %% Parse data
@@ -23,8 +23,8 @@ r     = sol.state.r;
 
 
 %% Do the thing
-% stop extend conditions? 3/4, when yN_extend < yN(end) - R
-stopY = yN(end) - p.R;
+% stop extend conditions? 1/2, when yN_extend < yN(end)
+stopY = yN(end);
 while yN(end) > stopY
     
     % iteration info
