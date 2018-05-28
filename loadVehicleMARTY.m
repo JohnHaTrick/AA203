@@ -46,7 +46,7 @@ vehicle.Tmin         = -15000;      % maximum brake torque
 
 %% Steering properties
 vehicle.deltaMax     = 0.671825;    % [rad]   delta limit
-vehicle.deltaRateMax = 0.344;       % [rad/s] slew limit
+vehicle.deltaRateMax = 2;           % [rad/s] slew limit
 %     vehicle.steerRatio   = 1;           % HWA to RWA
 
 

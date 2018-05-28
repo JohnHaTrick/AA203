@@ -22,11 +22,11 @@ integration = 0; %0-Euler's, 1-Heun's
 % Horizon length
 % p.T         = 2;                        % [sec] Total time to hit target
 % p.dt        = 0.025;                    % [sec] Time step
-p.dtmin     = 0.001;                    % [sec] lower lim on dt
+p.dtmin     = 0.01;                     % [sec] lower lim on dt
 p.dtmax     = 0.05;                     % [sec] upper lim on dt
-p.dtminAve  = 0.01;                     % [sec] keep average dt above this
-p.nSS       = 10;                       % # of steps in SS constraint
-p.N         = 90 + p.nSS;              % # of time steps
+% p.dtminAve  = 0.01;                     % [sec] keep average dt above this
+p.nSS       = 2;                        % # of steps in SS constraint
+p.N         = 150 + p.nSS;              % # of time steps
 
 % load MARTY parameters
 vehicle     = loadVehicleMARTY();
@@ -85,7 +85,7 @@ settings.ipopt.acceptable_iter  = 10;   % default = 15
     % tol info: https://www.coin-or.org/Ipopt/documentation/node42.html#SECTION000112010000000000000
 settings.verbose                = 3;
 settings.debug                  = 1;
-
+settings.usex0 = 1;
 
 %% Optimization Object
 [objective, constraints, variables] = DriftNonlinear(p,integration);
@@ -105,36 +105,28 @@ for i = 1:length(constraints)
     sol.dual.(['c' num2str(i)]) = [ {dual(constraints(i))} {tag(constraints(i))} ];
 end
 
+sol.t = cumsum([0 sol.variable.dt]);
+p.R   = R;
 
-%% Gather Data
-% State Variables
-xE          = sol.state.xE;
-yN          = sol.state.yN;
-Psi         = sol.state.Psi;
-Ux          = sol.state.Ux;
-Uy          = sol.state.Uy;
-r           = sol.state.r;
-
-% Input Variables
-Tr          = sol.input.Tr;
-% Tr          = sol.input.Fxr*p.Rwr; % if solving for Fxr
-delta       = sol.input.delta;
-
-% Time
-N           = p.N;
-t           = cumsum([0 sol.variable.dt]);
+% cleanup extra variables
+clearvars fn copynames i integration message R;
 
 
 %% Print Results
-fprintf('\ndUx/dt = %f\n',(Ux(end)-Ux(end-1))/(t(end)-t(end-1)));
-fprintf('dUy/dt = %f\n',(Uy(end)-Uy(end-1))/(t(end)-t(end-1)));
-fprintf('dr/dt = %f\n',(r(end)-r(end-1))/(t(end)-t(end-1)));
-fprintf('\n((xE-E_f)/10)^2 = %f \n',((xE(end)-p.E_f)/10)^2);
-fprintf('((yN-N_f)/10)^2 = %f \n',((xE(end)-p.N_f)/10)^2);
-fprintf('((Psi-Psi_f)/10)^2 = %f \n',((Psi(end)-p.Psi_f))^2);
-fprintf('sum(abs(Tr))/N = %f \n',sum(abs(Tr))/N);
-fprintf('100*sum(diff(delta).^2)/N = %f \n',100*sum(diff(delta).^2)/N);
-fprintf('sum(dt)/N = %f \n',sum(diff(t))/N);
+fprintf('\ndUx/dt = %f\n',(sol.state.Ux(end)-sol.state.Ux(end-1))/(sol.t(end)-sol.t(end-1)));
+fprintf('dUy/dt = %f\n',(sol.state.Uy(end)-sol.state.Uy(end-1))/(sol.t(end)-sol.t(end-1)));
+fprintf('dr/dt = %f\n',(sol.state.r(end)-sol.state.r(end-1))/(sol.t(end)-sol.t(end-1)));
+fprintf('\n((xE-E_f)/10)^2 = %f \n',((sol.state.xE(end)-p.E_f)/10)^2);
+fprintf('((yN-N_f)/10)^2 = %f \n',((sol.state.xE(end)-p.N_f)/10)^2);
+fprintf('((Psi-Psi_f)/10)^2 = %f \n',((sol.state.Psi(end)-p.Psi_f))^2);
+fprintf('sum(abs(Tr))/N = %f \n',sum(abs(sol.input.Tr))/p.N);
+fprintf('100*sum(diff(delta).^2)/N = %f \n',100*sum(diff(sol.input.delta).^2)/p.N);
+fprintf('sum(dt)/N = %f \n',sum(diff(sol.t))/p.N);
+
+
+%% Extend results to complete the drift
+% Use the final SS inputs and velocity states to evolve for ~3/4 circle
+sol = extendDrift(sol,p);
 
 
 %% Plot Results
@@ -143,4 +135,12 @@ fprintf('sum(dt)/N = %f \n',sum(diff(t))/N);
 % eqStates.delta = final.input.delta;
 % eqStates.beta  = final.state.beta;
 % eqStates.V     = sqrt(eqStates.Ux^2 + eqStates.Uy^2);
-plotNonlinearSoln(t,sol,p);
+plotNonlinearSoln(sol,p);
+
+
+%% Interpolate results to regular time interval
+% possibly add more dirfting states
+interpResults = interpolateResults(sol,p);
+
+
+

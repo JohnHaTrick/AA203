@@ -51,42 +51,43 @@ Ux      = mdlvar(N+1,10,'state');
 Uy      = mdlvar(N+1,4,'state');
 r       = mdlvar(N+1,1,'state');
 
-%% Initial Guesses
-% INPUT VARIABLES
-assign(delta.variable,  zeros(1,N_var))
-assign(Tr.variable,     zeros(1,N_var))
-
-% LIFTING VARIABLES
-assign(alphaF.variable, zeros(1,N))
-assign(alphaR.variable, zeros(1,N))
-assign(Fyf.variable,    zeros(1,N))
-assign(Fxf.variable,    zeros(1,N))
-assign(Fzf.variable,    ones(1,N))
-assign(Fyr.variable,    zeros(1,N))
-assign(Fxr.variable,    zeros(1,N))
-assign(Fzr.variable,    ones(1,N))
-assign(Xi.variable,     ones(1,N))
-assign(dt.variable, zeros(1,N)+0.01)
-
-if integration == 1
-assign(alphaF2.variable, zeros(1,N))
-assign(alphaR2.variable, zeros(1,N))
-assign(Fyf2.variable,    zeros(1,N))
-assign(Fxf2.variable,    zeros(1,N))
-assign(Fzf2.variable,    ones(1,N))
-assign(Fyr2.variable,    zeros(1,N))
-assign(Fxr2.variable,    zeros(1,N))
-assign(Fzr2.variable,    ones(1,N))
-assign(Xi2.variable,     ones(1,N))
-end
-
-% STATE VARIABLES
-assign(xE.variable,     zeros(1,N+1))
-% assign(yN.variable,     zeros(1,N+1))
-assign(Psi.variable,    zeros(1,N+1))
-assign(Ux.variable,     ones(1,N+1))
-assign(Uy.variable,     zeros(1,N+1))
-assign(r.variable,      zeros(1,N+1))
+% %% Initial Guesses
+% % INPUT VARIABLES
+% load('guess.mat');
+% assign(delta.physical,  guess.input.delta)
+% assign(Tr.physical,     guess.input.Tr)
+% 
+% % LIFTING VARIABLES
+% assign(alphaF.variable, guess.variable.alphaF/alphaF.const)
+% assign(alphaR.variable, guess.variable.alphaR/alphaR.const)
+% assign(Fyf.variable,    guess.variable.Fyf/Fyf.const)
+% assign(Fxf.variable,    guess.variable.Fxf/Fxf.const)
+% assign(Fzf.variable,    guess.variable.Fzf/Fzf.const)
+% assign(Fyr.variable,    guess.variable.Fyr/Fyr.const)
+% assign(Fxr.variable,    guess.variable.Fxr/Fxr.const)
+% assign(Fzr.variable,    guess.variable.Fzr/Fzr.const)
+% assign(Xi.variable,     guess.variable.Xi/Xi.const)
+% assign(dt.variable,     guess.variable.dt/dt.const)
+% 
+% if integration == 1
+% assign(alphaF2.variable, zeros(1,N))
+% assign(alphaR2.variable, zeros(1,N))
+% assign(Fyf2.variable,    zeros(1,N))
+% assign(Fxf2.variable,    zeros(1,N))
+% assign(Fzf2.variable,    ones(1,N))
+% assign(Fyr2.variable,    zeros(1,N))
+% assign(Fxr2.variable,    zeros(1,N))
+% assign(Fzr2.variable,    ones(1,N))
+% assign(Xi2.variable,     ones(1,N))
+% end
+% 
+% % STATE VARIABLES
+% assign(xE.variable,     guess.state.xE/xE.const)
+% assign(yN.variable,     guess.state.yN/yN.const)
+% assign(Psi.variable,    guess.state.Psi/Psi.const)
+% assign(Ux.variable,     guess.state.Ux/Ux.const)
+% assign(Uy.variable,     guess.state.Uy/Uy.const)
+% assign(r.variable,      guess.state.r/r.const)
 
 %% Inizialize Constraints
 constraints = [];
@@ -213,8 +214,8 @@ constraints = [ constraints
     delta.variable     <=  deltaMax/delta.const %+ slack.variable
     delta.variable     >= -deltaMax/delta.const %+ slack.variable
 %         delta.variable     == 0                                % no steering
-%     diff(delta.physical)./dt.physical(1:end-1) <= deltaRateMax % slew rate
-%     diff(delta.physical)./dt.physical(1:end-1) >= -deltaRateMax
+    diff(delta.physical)./dt.physical(1:end-1) <= deltaRateMax % slew rate
+    diff(delta.physical)./dt.physical(1:end-1) >= -deltaRateMax
     ];
 
 %% Physical Constraints
@@ -321,32 +322,21 @@ end
 
 
 %% Objective
-% objective = sum(abs(diff(delta.variable)) + abs(diff(Tr.variable))); % Black magic tricks: set objective size to 1
-% objective = sum(diff(delta.variable).^2 + diff(Tr.variable).^2)/1.5e-2; % Black magic tricks: set objective size to 1
-% objective = ( ...
-%     + (Ux.variable(N+1)  - Ux_f/Ux.const)^2 ...
-%     + (Uy.variable(N+1)  - Uy_f/Uy.const)^2 ...
-%     + (r.variable(N+1)   - r_f/r.const)^2 ...
-%     + (delta.variable(N) - delta_f/delta.const)^2 ...
-%     + sum(abs(Tr.variable))/N ...
-%     + sum(diff(delta.variable).^2)/N ...
-%     + norm(slack.variable) ...
-%     );
-%             + (slack.variable).^2 ...
-%             + (xE.variable(N+1)  - E_f/xE.const)^2 ...
-%             + (yN.variable(N+1)  - N_f/yN.const)^2 ...
-%             + (Psi.variable(N+1) - Psi_f/Psi.const)^2 ...
-
-% objective = slack.variable + 0*sum(delta.variable.^2 + Tr.variable.^2);
-% objective = slack.variable ... %+ 0.001*sum(delta.variable.^2 + Fxr.variable.^2)...
-%             + 0.01*sum(diff(delta.variable).^2 + diff(Fxr.variable).^2);
 objective = ( ...
-    + (xE.variable(N+1-nSS)  - E_f/Ux.const)^2 ...
-    + sum(dt.variable)/N ...
+    + ((xE.physical(N+1-nSS) - E_f)/xE.const)^2 ... % target East pos
+    + ((yN.physical(N+1-nSS) - N_f)/yN.const)^2 ... % target North pos
+...    + sum(dt.variable)/N ...                        % minimize time
+...    - sum(xE.variable.^2)/N ...
+...    + 100*sum(diff(delta.variable).^2)/N ...        % change in delta
+...    + (slack.variable).^2 ...                       % slack
     );
-%     + 100*sum(diff(delta.variable).^2)/N ...
-%     + (yN.variable(N+1-nSS)  - N_f/Uy.const)^2 ...
-
+% + sum(delta.variable.^2 + Tr.variable.^2)
+% + (Psi.variable(N+1) - Psi_f/Psi.const)^2 ...
+% + sum(abs(Tr.variable))/N ...
+% + (delta.variable(N) - delta_f/delta.const)^2 ...
+% + (Ux.variable(N+1)  - Ux_f/Ux.const)^2 ...
+% + (Uy.variable(N+1)  - Uy_f/Uy.const)^2 ...
+% + (r.variable(N+1)   - r_f/r.const)^2 ...
 
 %% Collect sdpvars and return
 s = whos;
@@ -355,3 +345,4 @@ for i = 1:numel(s)
         variables.(s(i).name) = eval(s(i).name);
     end
 end
+

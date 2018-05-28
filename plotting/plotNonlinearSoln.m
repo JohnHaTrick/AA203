@@ -1,12 +1,13 @@
-function plotNonlinearSoln( t, sol, p)
+function plotNonlinearSoln(sol, p)
 %PLOTNONLINEARSOLN
 %   Plot solution of AA203 nonlinear trajectory
 
 close all;
 
 %% Parse Solution Data
-N = size(t,2)-1;
+t           = sol.t;
 dt          = sol.variable.dt;
+N = size(t,2)-1;
 % State Variables
 xE          = sol.state.xE;
 yN          = sol.state.yN;
@@ -52,17 +53,19 @@ subplot(5,2,6); hold on; box on
     plot(t,p.V_f*ones(size(t)),'k--')
     ylabel('V [m/s]')
     set(gca,'xticklabel',{})
+    ylim([0 1.1*max(Ux)])
 subplot(5,2,7); hold on; box on
     plot(t,Ux,'k'); grid on
     plot(t,p.Ux_f*ones(size(t)),'k--')
     ylabel('U_x [m/s]')
     set(gca,'xticklabel',{})
+    ylim([0 1.1*max(Ux)])
 subplot(5,2,8); hold on; box on
     plot(t,Uy,'k'); grid on
     plot(t,p.Uy_f*ones(size(t)),'k--')
     xlabel('t [s]')
     ylabel('U_y [m/s]')
-%     set(gca,'xticklabel',{})
+    ylim([1.1*min(Uy) 2*max(Uy)])
 subplot(5,2,9); hold on; grid on;
     plot(t, .5*(p.Iz*sol.state.r.^2))
     plot(t, .5*(p.m*(Ux.^2+Uy.^2)))
@@ -73,7 +76,7 @@ subplot(5,2,9); hold on; grid on;
 subplot(5,2,10); hold on; grid on;
     plot(dt*1000)
     title('solution time steps')
-    xlabel('iterations')
+    xlabel('stage')
     ylabel('msec')
     
 %% Input Variables
@@ -100,7 +103,7 @@ ax(3) = subplot(313); hold on; box on; grid on;
     title('Slew Rate')
     xlabel('iteration #')
     ylabel('rad/sec')
-    ylim([-5*p.deltaRateMax, 5*p.deltaRateMax])
+    ylim([-2*p.deltaRateMax, 2*p.deltaRateMax])
     
 %% Global Position Trajectory
 figure('Name','Trajectory E-N','Position',[1200 50 700 700]);
@@ -112,7 +115,7 @@ ylabel('N [m]')
 
 % draw MARTY
 for j = 0:N
-    if mod(j-1,20) == 0
+    if mod(j-1,30) == 0
         i = N+1-j;
         w = 1.5;    l = 2;    t = .7;
         R   = plot([xE(i)-w/2, xE(i)+w/2], ...
