@@ -25,7 +25,7 @@ r     = sol.state.r;
 %% Do the thing
 % stop extend conditions? 1/2, when yN_extend < yN(end)
 stopY = yN(end);
-while yN(end) > stopY
+while yN(end) > stopY - 1
     
     % iteration info
     dt    = [dt,    dt(end)];
