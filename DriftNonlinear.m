@@ -29,7 +29,8 @@ Fyr     = mdlvar(N,1e4);
 Fxr     = mdlvar(N,1e4);
 Fzr     = mdlvar(N,1e4);
 Xi      = mdlvar(N,1);
-dt      = mdlvar(N,1e-2);
+% dt      = mdlvar(N,1e-2);
+dt      = mdlvar(1,1e-2);
 
 if integration == 1
     alphaF2  = mdlvar(N,1);
@@ -162,7 +163,7 @@ constraints = [constraints;
     diff(Ux.variable(end-nSS:end)) == 0
     diff(Uy.variable(end-nSS:end)) == 0
     diff(r.variable(end-nSS:end)) == 0
-    dt.variable(end-nSS+1:end) == dtmax/dt.const
+%     dt.variable(end-nSS+1:end) == dtmax/dt.const
     ];
 
 % State Constraints
@@ -198,12 +199,12 @@ constraints = [ constraints
 
 % Terminal Conditions
 constraints = [ constraints
-    Psi.variable(N+1-nSS)   == Psi_f/Psi.const
-    Ux.variable(N+1)    == Ux_f/Ux.const
-    Uy.variable(N+1)    == Uy_f/Uy.const
-    r.variable(N+1)     == r_f/r.const
-    Tr.variable(N_var-nSS)      == Tr_f/Tr.const;
-    delta.variable(N_var-nSS)   == delta_f/delta.const;
+    Psi.variable(N+1-nSS)     == Psi_f/Psi.const
+    Ux.variable(N+1)          == Ux_f/Ux.const
+    Uy.variable(N+1)          == Uy_f/Uy.const
+    r.variable(N+1)           == r_f/r.const
+    Tr.variable(N_var-nSS)    == Tr_f/Tr.const;
+    delta.variable(N_var-nSS) == delta_f/delta.const;
     ];
 
 % Input Constraints
@@ -214,8 +215,10 @@ constraints = [ constraints
     delta.variable     <=  deltaMax/delta.const %+ slack.variable
     delta.variable     >= -deltaMax/delta.const %+ slack.variable
 %         delta.variable     == 0                                % no steering
-    diff(delta.physical)./dt.physical(1:end-1) <= deltaRateMax % slew rate
-    diff(delta.physical)./dt.physical(1:end-1) >= -deltaRateMax
+%     diff(delta.physical)./dt.physical(1:end-1) <= deltaRateMax % slew rate
+%     diff(delta.physical)./dt.physical(1:end-1) >= -deltaRateMax
+    diff(delta.physical)./dt.physical <= deltaRateMax % slew rate
+    diff(delta.physical)./dt.physical >= -deltaRateMax
     ];
 
 %% Physical Constraints
@@ -253,32 +256,31 @@ if integration == 0
 % Forces
 constraints = [ constraints
     % Longitudinal Forces:
-    Fxf.variable        == 0 %+ slack.variable % No front brakes for now
-    Fxr.variable        == Tr.physical/Rwr/Fxr.const %+ slack.variable interesting
+    Fxf.variable == 0 %+ slack.variable % No front brakes for now
+    Fxr.variable == Tr.physical/Rwr/Fxr.const %+ slack.variable interesting
     % Tire friction Limit:
-    Fxr.variable        <=  mur*Fzr.physical/Fxr.const %+ slack.variable
-    Fxr.variable        >= -mur*Fzr.physical.*cos(alphaR.physical)/Fxr.const %+ slack.variable
+    Fxr.variable <=  mur*Fzr.physical/Fxr.const %+ slack.variable
+    Fxr.variable >= -mur*Fzr.physical.*cos(alphaR.physical)/Fxr.const %+ slack.variable
     % if input is FxR instead of Tr
     % Fxr.variable        >= Tmin/Rwr/Fxr.const
     % Fxr.variable        <= Tmax/Rwr/Fxr.const
     % Normal loading forces:
-    Fzf.variable        == (m*b*g - h*Fxr.physical)/(a+b)/Fzf.const %+ slack.variable
-    Fzr.variable        == (m*a*g + h*Fxr.physical)/(a+b)/Fzr.const %+ slack.variable huge violations. big slack
+    Fzf.variable == (m*b*g - h*Fxr.physical)/(a+b)/Fzf.const %+ slack.variable
+    Fzr.variable == (m*a*g + h*Fxr.physical)/(a+b)/Fzr.const %+ slack.variable huge violations. big slack
     % Lateral Forces:
     Fyf.variable.*(1+exp(Wf*alphaF.physical))    ...
-    == muf*Fzf.physical.*(1 - exp(Wf*alphaF.physical))/Fyf.const %+ slack.variable
+                 == muf*Fzf.physical.*(1 - exp(Wf*alphaF.physical))/Fyf.const %+ slack.variable
     
     (Xi.variable*mur.*Fzr.physical/Fzr.const).^2 ...
-    == (mur*Fzr.physical/Fzr.const).^2 - (Fxr.physical/Fzr.const).^2 %+ slack.variable
+                 == (mur*Fzr.physical/Fzr.const).^2 - (Fxr.physical/Fzr.const).^2 %+ slack.variable
     %     Xi.variable == ones(size(Xi.variable)) % debug
     Fyr.variable.*(1+exp(Wr*alphaR.physical))    ...
-    == mur*Fzr.physical.*Xi.physical.*(1 - exp(Wr*alphaR.physical))/Fyr.const %+ slack.variable
+                 == mur*Fzr.physical.*Xi.physical.*(1 - exp(Wr*alphaR.physical))/Fyr.const %+ slack.variable
     
     % (Fxr.physical.^2 + Fyr.physical.^2).*(1 + 2*exp(Wr*alphaR.physical) + exp(2*Wr*alphaR.physical))/Fyr.const^2 == ...
     % ((muR*Fzr.physical).^2.*(1 - 2*exp(Wr*alphaR.physical) + exp(2*Wr*alphaR.physical))/Fyr.const^2;
     ];
 elseif integration == 1
-    
     constraints = [ constraints
         % Longitudinal Forces:
         Fxf.variable        == 0 % No front brakes for now
@@ -291,52 +293,49 @@ elseif integration == 1
         Fzr.variable        == (m*a*g + h*Fxr.physical)/(a+b)/Fzr.const
         % Lateral Forces:
         Fyf.variable.*(1+exp(Wf*alphaF.physical))    ...
-        == muf*Fzf.physical.*(1 - exp(Wf*alphaF.physical))/Fyf.const
-        
+                            == muf*Fzf.physical.*(1 - exp(Wf*alphaF.physical))/Fyf.const        
         (Xi.variable*mur.*Fzr.physical/Fzr.const).^2 ...
-        == (mur*Fzr.physical/Fzr.const).^2 - (Fxr.physical/Fzr.const).^2
-
+                            == (mur*Fzr.physical/Fzr.const).^2 - (Fxr.physical/Fzr.const).^2
         Fyr.variable.*(1+exp(Wr*alphaR.physical))    ...
-        == mur*Fzr.physical.*Xi.physical.*(1 - exp(Wr*alphaR.physical))/Fyr.const
-        
+                            == mur*Fzr.physical.*Xi.physical.*(1 - exp(Wr*alphaR.physical))/Fyr.const
         % Longitudinal Forces:
-        Fxf2.variable        == 0 % No front brakes for now
-        Fxr2.variable        == Heun(Tr.physical)/Rwr/Fxr2.const 
+        Fxf2.variable       == 0 % No front brakes for now
+        Fxr2.variable       == Heun(Tr.physical)/Rwr/Fxr2.const 
         % Tire friction Limit:
-        Fxr2.variable        <=  mur*Fzr2.physical/Fxr2.const %+ slack.variable
-        Fxr2.variable        >= -mur*Fzr2.physical.*cos(alphaR2.physical)/Fxr2.const %+ slack.variable
+        Fxr2.variable       <=  mur*Fzr2.physical/Fxr2.const %+ slack.variable
+        Fxr2.variable       >= -mur*Fzr2.physical.*cos(alphaR2.physical)/Fxr2.const %+ slack.variable
         % Normal loading forces:
-        Fzf2.variable        == (m*b*g - h*Fxr2.physical)/(a+b)/Fzf2.const
-        Fzr2.variable        == (m*a*g + h*Fxr2.physical)/(a+b)/Fzr2.const 
+        Fzf2.variable       == (m*b*g - h*Fxr2.physical)/(a+b)/Fzf2.const
+        Fzr2.variable       == (m*a*g + h*Fxr2.physical)/(a+b)/Fzr2.const 
         % Lateral Forces:
         Fyf2.variable.*(1+exp(Wf*alphaF2.physical))    ...
-        == muf*Fzf2.physical.*(1 - exp(Wf*alphaF2.physical))/Fyf2.const
-        
+                            == muf*Fzf2.physical.*(1 - exp(Wf*alphaF2.physical))/Fyf2.const
         (Xi2.variable*mur.*Fzr2.physical/Fzr2.const).^2 ...
-        == (mur*Fzr2.physical/Fzr2.const).^2 - (Fxr2.physical/Fzr2.const).^2
- 
+                            == (mur*Fzr2.physical/Fzr2.const).^2 - (Fxr2.physical/Fzr2.const).^2
         Fyr2.variable.*(1+exp(Wr*alphaR2.physical))    ...
-        == mur*Fzr2.physical.*Xi2.physical.*(1 - exp(Wr*alphaR2.physical))/Fyr2.const
+                            == mur*Fzr2.physical.*Xi2.physical.*(1 - exp(Wr*alphaR2.physical))/Fyr2.const
         ];
 end
 
 
 %% Objective
 objective = ( ...
-    + ((xE.physical(N+1-nSS) - E_f)/xE.const)^2 ... % target East pos
-    + ((yN.physical(N+1-nSS) - N_f)/yN.const)^2 ... % target North pos
+    + (( xE.physical(N+1-nSS) -   E_f)/xE.const)^2 ... % target East pos
+    + (( yN.physical(N+1-nSS) -   N_f)/yN.const)^2 ... % target North pos
+...    + ((Psi.physical(N+1-nSS) - Psi_f)/Psi.const)^2 ...% target Psi
 ...    + sum(dt.variable)/N ...                        % minimize time
-...    - sum(xE.variable.^2)/N ...
+...    - sum(xE.variable.^2)/N ...                     % maximize lat. dev.
 ...    + 100*sum(diff(delta.variable).^2)/N ...        % change in delta
+...    + sum(diff(Tr.variable).^2)/N ...               % change in Tr
+...    + sum(diff(dt.variable).^2)/N ...               % change in dt
 ...    + (slack.variable).^2 ...                       % slack
+...    + (Ux.variable(N+1) - Ux_f/Ux.const)^2 ...      % drift eq Ux
+...    + (Uy.variable(N+1) - Uy_f/Uy.const)^2 ...      % drift eq Uy
+...    + (r.variable(N+1)  - r_f/ r.const)^2 ...       % drift eq r
     );
 % + sum(delta.variable.^2 + Tr.variable.^2)
-% + (Psi.variable(N+1) - Psi_f/Psi.const)^2 ...
 % + sum(abs(Tr.variable))/N ...
 % + (delta.variable(N) - delta_f/delta.const)^2 ...
-% + (Ux.variable(N+1)  - Ux_f/Ux.const)^2 ...
-% + (Uy.variable(N+1)  - Uy_f/Uy.const)^2 ...
-% + (r.variable(N+1)   - r_f/r.const)^2 ...
 
 %% Collect sdpvars and return
 s = whos;

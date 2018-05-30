@@ -149,6 +149,45 @@ end
 % draw target circle
 
 
+%% Plot Forces
+figure('Name','Force Diagram','Position',[800 400 400 600]);
+ax(1) = subplot(211); hold on; box on; grid on; axis equal;
+    title('Front Axle Forces')
+    xlabel('Fxf')
+    ylabel('Fyf')
+    Fmax = p.mu*p.Fzf_stat;
+    rectangle('Position',[-Fmax, -Fmax, 2*Fmax, 2*Fmax],'Curvature',1,'EdgeColor','r','LineStyle','--');
+    plot(     sol.variable.Fyf.*cos(sol.input.delta(1:length(sol.variable.Fyf))), ...
+         (-1)*sol.variable.Fyf.*sin(sol.input.delta(1:length(sol.variable.Fyf))))
+    xlim([-10000 10000])
+    ylim([-10000 10000])
+    
+ax(2) = subplot(212); hold on; box on; grid on; axis equal;
+    title('Rear Axle Forces')
+    xlabel('Fxr')
+    ylabel('Fyr')
+    Fmax = p.mu*p.Fzr_stat;
+    rectangle('Position',[-Fmax, -Fmax, 2*Fmax, 2*Fmax],'Curvature',1,'EdgeColor','r','LineStyle','--');
+    plot(sol.variable.Fyr, sol.variable.Fxr)
+    xlim([-12000 12000])
+    ylim([-12000 12000])
+    
+    
+%% Plot Forces (t)
+figure('Name','Force Diagram','Position',[800 400 400 600]);
+ax(1) = subplot(211); hold on; box on; grid on;
+    title('Front tires forces')
+    plot(sol.t(1:length(sol.variable.Fyf)), sqrt(sol.variable.Fxf.^2 + sol.variable.Fyf.^2))
+    plot(sol.t(1:length(sol.variable.Fyf)), p.mu*sol.variable.Fzf)
+    
+ax(2) = subplot(212); hold on; box on; grid on;
+    title('Rear tires forces')
+    plot(sol.t(1:length(sol.variable.Fyf)), sqrt(sol.variable.Fxr.^2 + sol.variable.Fyr.^2))
+    plot(sol.t(1:length(sol.variable.Fyf)), p.mu*sol.variable.Fzr)
+
+
+
+
 %% what's this do?
 GenerateFig = false;
 if GenerateFig
