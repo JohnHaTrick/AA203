@@ -97,7 +97,8 @@ ax(2) = subplot(312); hold on; box on; grid on
     xlabel('t [s]')
     ylim([-1.1*p.deltaMax*180/pi, 1.1*p.deltaMax*180/pi])
 ax(3) = subplot(313); hold on; box on; grid on;
-    plot(diff(sol.input.delta)./sol.variable.dt(1:end-1),'k')
+%     plot(diff(sol.input.delta)./sol.variable.dt(1:end-1),'k') % use for size(dt) = N
+    plot(diff(sol.input.delta)/sol.variable.dt,'k')
     plot(p.deltaRateMax*ones(size(diff(sol.input.delta))),'--r')
     plot(-p.deltaRateMax*ones(size(diff(sol.input.delta))),'--r')
     title('Slew Rate')

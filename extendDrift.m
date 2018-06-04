@@ -28,8 +28,9 @@ stopY = yN(end);
 while yN(end) > stopY - 1
     
     % iteration info
-    dt    = [dt,    dt(end)];
-    t     = [t,     dt(end)  + t(end)];
+%     dt    = [dt,    dt(end)];             % use these for size(dt) = N
+%     t     = [t,     dt(end)  + t(end)];
+    t     = [t,     dt + t(end)];
     
     % inputs
     Tr    = [Tr,    Tr(end)];
