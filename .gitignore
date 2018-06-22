@@ -1,3 +1,5 @@
 # Windows autosave extension
 *.asv
 driftVid1.avi
+*.avi
+*.mp4

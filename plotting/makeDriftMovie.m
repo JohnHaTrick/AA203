@@ -33,7 +33,7 @@ steer = subplot('Position', [leftLim,0.55,0.45,0.4] ); % upper left
     title('Steering Angle')
 %     xlabel('time [sec]')
     ylabel('[deg]')
-    xlim manual; xlim([t(1),floor(t(end)*2/3)])
+    xlim manual; xlim([t(1),2.5])
     ylim manual; ylim([-vehicle.deltaMax*180/pi,vehicle.deltaMax*180/pi])
 
 torque = subplot('Position', [leftLim,lowLim,0.45,0.4] ); % lower right
@@ -41,18 +41,18 @@ torque = subplot('Position', [leftLim,lowLim,0.45,0.4] ); % lower right
     title('Rear Axle Torque')
     xlabel('time [sec]')
     ylabel('[kN-m]')
-    xlim manual; xlim([t(1),floor(t(end)*2/3)])
+    xlim manual; xlim([t(1),2.5])
     ylim manual; ylim([-5,5])
 
 state = subplot('Position', [0.55,lowLim,0.4,0.88] ); % right side
     grid on; axis equal;
-    title('Gobal Position')
+    title('Global Position')
     xlabel('East [m]')
     ylabel('North [m]')
-    xlim manual; xlim([min(xE)-15,max(xE)+15])
-    ylim manual; ylim([yN(1)-10,yN(end)+20])
+    xlim manual; xlim([min(xE)-10,max(xE)+10])
+    ylim manual; ylim([yN(1)-6,yN(end)+10])
     % plot target circle
-    r = p.R;
+    r = p.R_drift;
     target = rectangle('Position',[0-2*r, p.N_f-r, 2*r, 2*r],'Curvature',[1 1],'LineStyle','--','EdgeColor','r');
 
 
@@ -64,10 +64,10 @@ wid = 1.6;    len = 2.2;    trac = 1;
 n = 5; % data skips
 % Frames = getframe(fig);
 v = VideoWriter('driftVid.avi');
-v.FrameRate = 1/dt(1)/n;
+v.FrameRate = (1/3)*2/dt(1)/n;
 open(v);
 
-for i = 1:length(t)
+for i = 1:400
     
     if mod(i,n)
         j = min(i,length(t)-1);
