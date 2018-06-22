@@ -5,7 +5,8 @@
 %       John Alsterda, Stanford U,  alsterda@stanford.edu
 %       Qizhan Tam,    Stanford U,  qtam@stanford.edu
 
-clear all; close all; clc
+clear all;
+% close all; clc
 
 
 %% Include Dependencies into Path
@@ -14,62 +15,29 @@ addpath(genpath('..\AA203'));
 % addpath(genpath('..\..\MATLAB\YALMIP-master'));
 
 
-%% Integration Scheme (Euler's vs Trapz)
-integration = 0; %0-Euler's, 1-Heun's
-
-
 %% Define Parameters
-% Horizon length
-% p.T         = 2;                        % [sec] Total time to hit target
-% p.dt        = 0.025;                    % [sec] Time step
-p.dtmin     = 0.01;                     % [sec] lower lim on dt
-p.dtmax     = 0.05;                     % [sec] upper lim on dt
-% p.dtminAve  = 0.01;                     % [sec] keep average dt above this
-p.nSS       = 2;                        % # of steps in SS constraint
-p.N         = 150 + p.nSS;              % # of time steps
+% load Boundary Values and Opt Params
+BVs          = loadSolveParameters();   % init and final vals found here
+fn           = fieldnames(BVs);
+for i = 1:length(fn)
+   p.(fn{i}) = BVs.(fn{i});             % load struct BVs into p
+end
 
 % load MARTY parameters
-vehicle     = loadVehicleMARTY();
-fn          = fieldnames(vehicle);
+vehicle      = loadVehicleMARTY();
+fn           = fieldnames(vehicle);
 for i = 1:length(fn)
    p.(fn{i}) = vehicle.(fn{i});         % load struct vehicle into p
 end
 
-% Initial conditions
-p.E_0       = 0;                        % [m]     Initial East position
-p.N_0       = 0;                        % [m]     Initial North position
-p.Psi_0     = 0;                        % [rad]   Initial Heading position
-p.Ux_0      = 10;                       % [m/s]   Initial x speed
-p.Uy_0      = 0;                        % [m/s]   Initial y speed
-p.r_0       = 0;                        % [rad/s] Initial yaw rate
-
-% Terminal drift conditions
-    % Use eq drift states calculated by a 1-step IPOPT ~10 May
-    % (new dynamics etc may expire these values. Suggest writing a script to
-    % calc this fresh before each optimization)
-    % Note: these are quite far from experimentally observed states!
-    load('sol_Equilibrium.mat');        % eq states and inputs found by IPOPT
-    % Or, a desired drift can be calculed by Jon Goh's scripts:
-    % R           = 6;                    % [m]     Radius of drift (if chosen)
-    % beta        = -30*pi/180;           % [rad]   Drift sideslip (if chosen)
-    % eqStates    = calcDriftEqStates(R,beta,vehicle);
-p.E_f       =  0;                       % [m]     Final East position
-p.N_f       =  20;                      % [m]     Final North position
-p.Psi_f     = -final.state.beta;        % [rad]   Final Orientation
-p.Ux_f      =  final.state.Ux;          % [m/s]   Final x speed
-p.Uy_f      =  final.state.Uy;          % [m/s]   Final y speed
-p.V_f       =  sqrt(p.Ux_f^2+p.Uy_f^2); % [m/s]    Final speed
-p.beta_f    =  final.state.beta;        % [rad]   Final sideslip
-p.r_f       =  final.state.r;           % [rad/s] Final yaw rate
-p.Tr_f      =  final.input.Tr;          % [Nm]    Final drive torque
-p.delta_f   =  final.input.delta;       % [rad]   Final steer angle
+% print problem introduction to terminal
 message     = ['Aiming to drift about a left turn with:\n' ...
                '    radius %.1f m\n' ...
                '    speed %.1f m/s       (Ux %.1f & Uy %.1f)\n' ...
                '    beta %.1f deg      (%.1f rad)\n' ...
                '    yaw rate %.1f deg/s (%.1f rad/s)\n\n'];
-fprintf(message, R, sqrt(p.Ux_f^2 + p.Uy_f^2), p.Ux_f, p.Uy_f, ...
-        final.state.beta*180/pi, final.state.beta, p.r_f*180/pi, p.r_f);
+fprintf(message, p.R_drift, sqrt(p.Ux_f^2 + p.Uy_f^2), p.Ux_f, ...
+        p.Uy_f, p.beta_f*180/pi, p.beta_f, p.r_f*180/pi, p.r_f);
 
 
 %% NLP Settings
@@ -84,11 +52,12 @@ settings.ipopt.acceptable_tol   = 1e-6; % default = 1e-6
 settings.ipopt.acceptable_iter  = 10;   % default = 15
     % tol info: https://www.coin-or.org/Ipopt/documentation/node42.html#SECTION000112010000000000000
 settings.verbose                = 3;
-settings.debug                  = 1;
-settings.usex0 = 1;
+settings.debug                  = 0;
+settings.usex0                  = 0;
+
 
 %% Optimization Object
-[objective, constraints, variables] = DriftNonlinear(p,integration);
+[objective, constraints, variables] = DriftNonlinear(p);
 
 
 %% Solve
@@ -105,11 +74,11 @@ for i = 1:length(constraints)
     sol.dual.(['c' num2str(i)]) = [ {dual(constraints(i))} {tag(constraints(i))} ];
 end
 
-sol.t = cumsum([0 sol.variable.dt]);
-p.R   = R;
+% sol.t = cumsum([0 sol.variable.dt]);               % use for size(dt) = N
+sol.t = 0 : sol.variable.dt : p.N*sol.variable.dt; % use for size(dt) = 1
 
 % cleanup extra variables
-clearvars fn copynames i integration message R;
+clearvars fn copynames i integration message;
 
 
 %% Print Results
