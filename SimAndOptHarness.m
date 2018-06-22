@@ -5,7 +5,8 @@
 %       John Alsterda, Stanford U,  alsterda@stanford.edu
 %       Qizhan Tam,    Stanford U,  qtam@stanford.edu
 
-clear all; close all; clc
+clear all;
+% close all; clc
 
 
 %% Include Dependencies into Path
@@ -14,19 +15,13 @@ addpath(genpath('..\AA203'));
 % addpath(genpath('..\..\MATLAB\YALMIP-master'));
 
 
-%% Integration Scheme (Euler's vs Trapz)
-integration  = 0; %0-Euler's, 1-Heun's
-
-
 %% Define Parameters
-% Horizon length
-% p.T          = 2;                        % [sec] Total time to hit target
-% p.dt         = 0.025;                    % [sec] Time step
-p.dtmin      = 0.01;                     % [sec] lower lim on dt
-p.dtmax      = 0.05;                     % [sec] upper lim on dt
-% p.dtminAve   = 0.01;                     % [sec] keep average dt above this
-p.nSS        = 1;                        % # of steps in SS constraint
-p.N          = 200 + p.nSS;              % # of time steps
+% load Boundary Values and Opt Params
+BVs          = loadSolveParameters();   % init and final vals found here
+fn           = fieldnames(BVs);
+for i = 1:length(fn)
+   p.(fn{i}) = BVs.(fn{i});             % load struct BVs into p
+end
 
 % load MARTY parameters
 vehicle      = loadVehicleMARTY();
@@ -35,13 +30,7 @@ for i = 1:length(fn)
    p.(fn{i}) = vehicle.(fn{i});         % load struct vehicle into p
 end
 
-% load Boundary Values
-BVs          = loadBoundaryValues();    % init and final vals found here
-fn           = fieldnames(BVs);
-for i = 1:length(fn)
-   p.(fn{i}) = BVs.(fn{i});             % load struct BVs into p
-end
-
+% print problem introduction to terminal
 message     = ['Aiming to drift about a left turn with:\n' ...
                '    radius %.1f m\n' ...
                '    speed %.1f m/s       (Ux %.1f & Uy %.1f)\n' ...
@@ -63,11 +52,12 @@ settings.ipopt.acceptable_tol   = 1e-6; % default = 1e-6
 settings.ipopt.acceptable_iter  = 10;   % default = 15
     % tol info: https://www.coin-or.org/Ipopt/documentation/node42.html#SECTION000112010000000000000
 settings.verbose                = 3;
-settings.debug                  = 1;
-settings.usex0 = 1;
+settings.debug                  = 0;
+settings.usex0                  = 0;
+
 
 %% Optimization Object
-[objective, constraints, variables] = DriftNonlinear(p,integration);
+[objective, constraints, variables] = DriftNonlinear(p);
 
 
 %% Solve
