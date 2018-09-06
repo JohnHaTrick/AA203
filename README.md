@@ -1,7 +1,7 @@
 # AA203 Drift Initiation
 
 ## Getting started:
-- read /Supporting_Docs/Alsterda_Tam_AA203_DriftInitiation.pdf
+- read /Support_Documents/Alsterda_Tam_AA203_DriftInitiation.pdf
 - run SimAndOptHarness.m
   - calls: DiftNonlinear.m
 - Dynamics equations located in: DroftDynamics.pdf
